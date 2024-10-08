@@ -13,7 +13,7 @@ Design 2 basic architechtures of RISC_V: single-cycle and pipelined.
 2.  **Folder description**
    - '00_src': source code
    - '01_tb' : testbench file
-   - '03_dump' : file data (instruction memory)
+   - '03_dump' : file data (instruction memory)   
    - Update later
 3. **Update work to github from VSCode**
    - Pull data before working (always do it)
