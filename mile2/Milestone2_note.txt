@@ -15,3 +15,6 @@ Signal:
 
 Control unit: 
     + signal độc lập và phụ thuộc
+
+Report: 
+    + Mỗi module: Cho thấy cách làm, vì sao làm vậy, chèn diagram (có thể có waveform nhưng phải giải thích)
