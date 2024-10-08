@@ -4,4 +4,14 @@ Code style: https://github.com/lowRISC/style-guides/blob/master/VerilogCodingSty
 
 Không sài '-', comparison operator, shift operator
 
+Ngoại vi: (memory mapping)
+    + Thêm vào trên địa chỉ của button.
 
+Memory: 
+    + using SDRAM hoặc SRAM (data memory).
+
+Signal: 
+    + o_insn_vld (instruction valid signal): check out instruction. 
+
+Control unit: 
+    + signal độc lập và phụ thuộc
