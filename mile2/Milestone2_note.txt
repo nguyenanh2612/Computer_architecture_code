@@ -1,0 +1,7 @@
+Single cycle RISC-V
+
+Code style: https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md#verilogsystemverilog-conventions
+
+Không sài '-', comparison operator, shift operator
+
+
