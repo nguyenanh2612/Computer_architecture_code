@@ -12,7 +12,7 @@
            alu       |             Done             | A block that operates the operators or executes the       |
                      |                              | algorithms of R-type insturctions                         |
 ---------------------|------------------------------|-----------------------------------------------------------|
-          bru        |                              | A block that identifies when the BR-instructions's        |
+          bru        |             Done             | A block that identifies when the BR-instructions's        |
                      |                              | conditions is right                                       | 
 ---------------------|------------------------------|-----------------------------------------------------------|
         regfile      |                              | Purpose registers (32 registers) are used for executing   |       
