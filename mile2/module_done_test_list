@@ -9,7 +9,7 @@
           imme       |                              | A block that signs extended the immediate value for I-type|
                      |                              | instruction                                               | 
 ---------------------|------------------------------|-----------------------------------------------------------|
-           alu       |                              | A block that operates the operators or executes the       |
+           alu       |             Done             | A block that operates the operators or executes the       |
                      |                              | algorithms of R-type insturctions                         |
 ---------------------|------------------------------|-----------------------------------------------------------|
           bru        |                              | A block that identifies when the BR-instructions's        |
