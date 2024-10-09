@@ -1,12 +1,23 @@
-        Module       |           State Test         |                           Description                     |
+         Module      |           State Test         |                           Description                     |
 ---------------------|------------------------------|-----------------------------------------------------------|
-        PC           |             Done             | A D-FF transfers 32 bits address of instruction memory    | 
+           pc        |             Done             | A D-FF transfers 32 bits address of instruction memory    | 
                      |                              | at each positive edge clock                               | 
 ---------------------|------------------------------|-----------------------------------------------------------|
-      Ins_mem        |             Done             | A 1 input and 1 ouput ram, get instruction from mem.mif   |
+         ins_mem     |             Done             | A 1 input and 1 ouput ram, get instruction from mem.mif   |
                      |                              | file                                                      | 
 ---------------------|------------------------------|-----------------------------------------------------------|
-       imme          |                              | A block that sign extended the immediate value for I-type |
+          imme       |                              | A block that signs extended the immediate value for I-type|
                      |                              | instruction                                               | 
 ---------------------|------------------------------|-----------------------------------------------------------|
+           alu       |                              | A block that operates the operators or executes the       |
+                     |                              | algorithms of R-type insturctions                         |
+---------------------|------------------------------|-----------------------------------------------------------|
+          bru        |                              | A block that identifies when the BR-instructions's        |
+                     |                              | conditions is right                                       | 
+---------------------|------------------------------|-----------------------------------------------------------|
+        regfile      |                              | Purpose registers (32 registers) are used for executing   |       
+                     |                              | Note: can not write to x0 or register[0] (reserved value) | 
+---------------------|------------------------------|-----------------------------------------------------------|
+
+New will update before Fri/Oct/11/2024 
 
