@@ -7,7 +7,7 @@
                      |                              | file                                                      | 
 ---------------------|------------------------------|-----------------------------------------------------------|
           imme       |                              | A block that signs extended the immediate value for I-type|
-                     |                              | instruction                                               | 
+                     |                              | instruction (extend value 11 bits and 20 bits)            | 
 ---------------------|------------------------------|-----------------------------------------------------------|
            alu       |             Done             | A block that operates the operators or executes the       |
                      |                              | algorithms of R-type insturctions                         |
