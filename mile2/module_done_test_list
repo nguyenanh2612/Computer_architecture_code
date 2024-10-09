@@ -3,5 +3,6 @@
         PC           |               Done           | A D-FF transfers 32 bits address of instruction memory    | 
                      |                              | at each positive edge clock                               | 
 ---------------------|------------------------------|-----------------------------------------------------------|
-
-
+        Imem         |                              | A 1 input and 1 ouput ram, get instruction from mem.mif   |
+                     |                              | file                                                      | 
+---------------------|------------------------------|-----------------------------------------------------------|
