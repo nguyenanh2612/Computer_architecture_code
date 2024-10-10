@@ -15,7 +15,7 @@
           bru        |             Done             | A block that identifies when the BR-instructions's        |
                      |                              | conditions is right                                       | 
 ---------------------|------------------------------|-----------------------------------------------------------|
-        regfile      |                              | Purpose registers (32 registers) are used for executing   |       
+        regfile      |             Done             | Purpose registers (32 registers) are used for executing   |       
                      |                              | Note: can not write to x0 or register[0] (reserved value) | 
 ---------------------|------------------------------|-----------------------------------------------------------|
 

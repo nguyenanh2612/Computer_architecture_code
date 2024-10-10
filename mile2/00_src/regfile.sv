@@ -1,38 +1,25 @@
 module regfile (
-    input logic clk_i,                  // Clock input
-    input logic rst_ni,                 // Active-low reset
-    input logic [4:0] rs1_addr,         // Address for source register 1
-    input logic [4:0] rs2_addr,         // Address for source register 2
-    input logic [4:0] rd_addr,          // Address for destination register
-    input logic [31:0] rd_data,         // Data to be written to rd
-    input logic rd_wren,                // Write enable for rd
-    output logic [31:0] rs1_data,       // Output data from rs1
-    output logic [31:0] rs2_data        // Output data from rs2
+    input logic i_clk, i_rst, i_rd_wren,
+    input logic [4:0] i_rs1_addr, i_rs2_addr, 
+    input logic [4:0] i_rd_addr, 
+    input logic [31:0] i_rd_data, 
+    output logic [31:0] o_rs1_data, o_rs2_data
 );
+    
+    logic [31:0] register [0:31]; 
 
-    logic [31:0] register [31:0];        // 32 registers, each 32 bits wide
-    integer i; 
+    assign o_rs1_data = register[i_rs1_addr]; 
+    assign o_rs2_data = register[i_rs2_addr]; 
 
-    // Asynchronous read for rs1 and rs2
-    assign rs1_data = register[rs1_addr];
-    assign rs2_data = register[rs2_addr];
-
-    // Synchronous write to rd
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (!rst_ni) begin
-            // Reset the register file
-            for (i = 0; i < 32; i = i + 1) begin
-                register[i] <= 32'b0;
+    always_ff @( posedge i_clk ) begin
+        if (i_rst) begin
+            register = '{default: 32'd0}; 
+        end else begin
+            if (i_rd_wren & !(i_rd_addr == 5'd0)) begin
+                register[i_rd_addr] <= i_rd_data; 
+            end else begin
+                register[i_rd_addr] <= register[i_rd_addr]; 
             end
-        end else if (rd_wren && rd_addr != 5'b0) begin
-            // Write to the register on the positive edge of the clock
-            register[rd_addr] <= rd_data;
         end
     end
-
-    // Periodically write register file data to register.data for persistence
-    initial begin
-        $writememh("register.data", register);  // Save register file data in register.data
-    end
-
-endmodule
+endmodule 
