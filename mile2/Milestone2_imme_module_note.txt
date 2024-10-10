@@ -1,0 +1,2 @@
+I-type: 11 bits I value for extending
+BR-type: 20 bits I value for extendin
