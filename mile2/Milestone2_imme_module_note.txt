@@ -1,2 +1,6 @@
 I-type: 11 bits I value for extending
-BR-type: 12 bits I value for extendin
+BR-type: 12 bits I value for extending
+
+Với I-type: imme[11:0] = instruction[31:20]
+Với Br-type: imme[12:1] = instruction[31], instruction[7], instruction[30:25], instruction[11:8]
+Với LD & ST-types: imme[11:0] = instruction[31:20]
