@@ -21,6 +21,9 @@ Design 2 basic architechtures of RISC_V: single-cycle and pipelined.
    - Pull data before working (always do it)
    - Commit & push to github
    - Wait the owner accept the request or messaging to ánh
+4. **Control unit signal excel**
+   - Link for single cycle: https://docs.google.com/spreadsheets/d/1aaAOjJfxVr4wakKfACmRoRKg5aqppr6bIWHU7UIUbmI/edit?usp=sharing
+   - link for pipeline    : update later
 
 ## Note
   Any new ignores, it will be updated later.

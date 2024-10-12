@@ -6,7 +6,7 @@
          ins_mem     |             Done             | A 1 input and 1 ouput ram, get instruction from mem.mif   |
                      |                              | file                                                      | 
 ---------------------|------------------------------|-----------------------------------------------------------|
-          imme       |                              | A block that signs extended the immediate value for I-type|
+          imme       |             Done             | A block that signs extended the immediate value for I-type|
                      |                              | instruction (extend value 11 bits and 20 bits)            | 
 ---------------------|------------------------------|-----------------------------------------------------------|
            alu       |             Done             | A block that operates the operators or executes the       |
@@ -18,6 +18,9 @@
         regfile      |             Done             | Purpose registers (32 registers) are used for executing   |       
                      |                              | Note: can not write to x0 or register[0] (reserved value) | 
 ---------------------|------------------------------|-----------------------------------------------------------|
-
-New will update before Fri/Oct/11/2024 
+          lsu        |                              | A block that addresses mapping for the peripherals        | 
+                     |                              | connects or contacts                                      | 
+---------------------|------------------------------|-----------------------------------------------------------|
+       
+New will update before Tues/Oct/15/2024 
 
