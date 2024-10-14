@@ -18,7 +18,7 @@
         regfile      |             Done             | Purpose registers (32 registers) are used for executing   |       
                      |                              | Note: can not write to x0 or register[0] (reserved value) | 
 ---------------------|------------------------------|-----------------------------------------------------------|
-          lsu        |                              | A block that addresses mapping for the peripherals        | 
+          lsu        |             Done             | A block that addresses mapping for the peripherals        | 
                      |                              | connects or contacts                                      | 
 ---------------------|------------------------------|-----------------------------------------------------------|
        
