@@ -1,127 +1,130 @@
 module ctrl_unit (
-    input logic clk_i, 
-    input logic [31:0] instr, 
-    input logic br_less, 
-    input logic br_equal, 
-
-    output logic [3:0] alu_op, 
-    output logic br_sel,  
-    output logic br_unsigned, 
-    output logic rd_wren, 
-    output logic mem_wren, 
-    output logic op_a_sel, op_b_sel, 
-    output logic [1:0] wb_sel 
+    input logic [31:0] i_instruction, 
+    input logic i_br_less, i_br_equal,
+    
+    output logic o_opa_sel, o_opb_sel, o_pc_sel, 
+    output logic [1:0] o_wb_sel,
+    output logic [3:0] o_alu_op, 
+    output logic o_mem_wren, o_rd_wren, 
+    output logic o_br_uns,
+    output logic o_insn_vld
 );
-    logic [6:0] opcode_d, fucntion7_d; 
-    logic [2:0] fucntion3_d;
-
-    assign opcode_d = instr[6:0]; 
-    assign fucntion7_d = instr[31:25]; 
-    assign fucntion3_d = instr[14:12]; 
-
+    
     always_comb begin
-        case (opcode_d)
-        //R-type
+        case (i_instruction[6:0])
+        //R_type
         7'b0110011: begin
-            op_a_sel = 0; 
-            op_b_sel = 0; 
-            mem_wren = 0; 
-            wb_sel = 2'd0; 
-            rd_wren = 1;
-            case (fucntion3_d)
+            o_opa_sel = 0; 
+            o_opb_sel = 0; 
+            o_mem_wren = 0; 
+            o_wb_sel = 2'b01; 
+            o_rd_wren = 1; 
+            o_br_uns = 0; 
+            o_pc_sel = 0; 
+            o_insn_vld = 1;
+            case (i_instruction[14:12])
             // ADD + SUB
-            3'd0: begin 
-                alu_op = (fucntion7_d == 0) ? 4'd0 : 4'd1;
+            3'd0: begin
+                if (i_instruction[30]) begin
+                    o_alu_op = 4'b0001; 
+                end else begin
+                    o_alu_op = 4'b0000;
+                end
             end
             //SLL
-            3'd1: begin 
-                alu_op = 4'd7;
+            3'd1: begin
+                o_alu_op = 4'b0111; 
             end
-            //SLT
+            //SLT 
             3'd2: begin
-                alu_op = 4'd2; 
+                o_alu_op = 4'b0010; 
             end
-            //SLTU
+            //SLTU 
             3'd3: begin
-                alu_op = 4'd3; 
+                o_alu_op = 4'b0011; 
             end
             //XOR
             3'd4: begin
-                alu_op = 4'd4; 
+                o_alu_op = 4'b0100; 
             end
             //SRL + SRA
             3'd5: begin
-                alu_op = (fucntion7_d == 0) ? 4'd8 : 4'd9;
+                if (i_instruction[30]) begin
+                    o_alu_op = 4'b1001; 
+                end else begin
+                    o_alu_op = 4'b1000; 
+                end
             end
             //OR
             3'd6: begin
-                alu_op = 4'd5; 
+                o_alu_op = 4'b0101; 
             end
-            //AND
+            //AND  
             3'd7: begin
-                alu_op = 4'd10; 
+                o_alu_op = 4'b0110; 
             end
-                default: begin
-                    alu_op = 4'd11; 
-                end
             endcase
-        end 
-        //I-Type
+        end
+        //I_type
         7'b0010011: begin
-            op_a_sel = 0; 
-            op_b_sel = 1; 
-            mem_wren = 0; 
-            wb_sel = 2'd0; 
-            rd_wren = 1;
-           case (fucntion3_d)
+            o_opa_sel = 0; 
+            o_opb_sel = 1; 
+            o_mem_wren = 0; 
+            o_wb_sel = 2'b01; 
+            o_rd_wren = 1; 
+            o_br_uns = 0; 
+            o_pc_sel = 0; 
+            o_insn_vld = 1;
+            case (i_instruction[14:12])
             // ADDI
-            3'd0: begin 
-                alu_op = 4'd0;
+            3'd0: begin
+                o_alu_op = 4'b0000;
             end
             //SLLI
-            3'd1: begin 
-                alu_op = 4'd7;
+            3'd1: begin
+                o_alu_op = 4'b0111; 
             end
             //SLTI
             3'd2: begin
-                alu_op = 4'd2; 
+                o_alu_op = 4'b0010; 
             end
-            //SLTIU
+            //SLTIU 
             3'd3: begin
-                alu_op = 4'd3; 
+                o_alu_op = 4'b0011; 
             end
             //XORI
             3'd4: begin
-                alu_op = 4'd4; 
+                o_alu_op = 4'b0100; 
             end
             //SRLI + SRAI
             3'd5: begin
-                alu_op = (fucntion7_d[31:27] == 0) ? 4'd8 : 4'd9;
+                if (i_instruction[30]) begin
+                    o_alu_op = 4'b1001; 
+                end else begin
+                    o_alu_op = 4'b1000; 
+                end
             end
             //ORI
             3'd6: begin
-                alu_op = 4'd5; 
+                o_alu_op = 4'b0101; 
             end
             //ANDI
             3'd7: begin
-                alu_op = 4'd10; 
+                o_alu_op = 4'b0110; 
             end
-                default: begin
-                    alu_op = 4'd11; 
-                end
             endcase
         end
-        //BR-Type
-        
-        //NOP 
-        default: begin
-            op_a_sel = 0; 
-            op_b_sel = 0; 
-            mem_wren = 0; 
-            wb_sel = 2'd0; 
-            rd_wren = 0;
-            alu_op = 4'd11;
-        end
-        endcase
+            default:begin
+                o_opa_sel = 0; 
+                o_opb_sel = 0; 
+                o_mem_wren = 0; 
+                o_wb_sel = 2'b01; 
+                o_rd_wren = 0; 
+                o_br_uns = 0; 
+                o_pc_sel = 0; 
+                o_insn_vld = 0;
+                o_alu_op = 4'd10; 
+            end
+        endcase 
     end
-endmodule
+endmodule 
