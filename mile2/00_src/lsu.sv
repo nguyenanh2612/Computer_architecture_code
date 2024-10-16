@@ -14,7 +14,7 @@ module lsu (
     always_ff @( posedge i_clk or posedge i_rst ) begin
         if (i_rst) begin
             o_ld_data <= 32'd0; 
-				o_io_ledr <= 32'd0; 
+			o_io_ledr <= 32'd0; 
             o_io_ledg <= 32'd0;
         end else begin
             if (i_lsu_wren) begin
@@ -22,7 +22,7 @@ module lsu (
             end else begin
                 o_ld_data <= ram[i_lsu_addr];
 					 
-					 // Update o_io_ledr
+		    // Update o_io_ledr
             if ((i_lsu_addr == 32'h00001C00 || i_lsu_addr == 32'h00001C01 || i_lsu_addr == 32'h00001C02 || i_lsu_addr == 32'h00001C03) && !i_lsu_wren) begin
                 o_io_ledr <= o_ld_data;
             end

@@ -10,5 +10,5 @@ module ins_mem (
         $readmemh("instruction.txt",ins); 
     end
 	 
-	 assign o_data = ins[i_address]; 
-endmodule 
+	assign o_data = ins[i_address]; 
+endmodule
