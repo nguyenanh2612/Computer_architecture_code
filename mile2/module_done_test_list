@@ -21,6 +21,11 @@
           lsu        |             Done             | A block that addresses mapping for the peripherals        | 
                      |                              | connects or contacts                                      | 
 ---------------------|------------------------------|-----------------------------------------------------------|
-       
+     ld_data_rewrite |             Done             | A block that rewrite the load data corresponding to LOAD  |
+                     |                              | type instrucstion.                                        | 
+                     |                              | Note: sepearating a specific block to remain the SDRAM    | 
+                     |                              | in LSU and optimizing the logic element of LSU            | 
+---------------------|------------------------------|-----------------------------------------------------------|
+
 New will update before Tues/Oct/15/2024
 
