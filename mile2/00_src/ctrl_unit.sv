@@ -11,6 +11,15 @@ module ctrl_unit (
 );
     
     always_comb begin
+	     o_opa_sel = 0; 
+        o_opb_sel = 0; 
+        o_mem_wren = 0; 
+        o_wb_sel = 2'b01; 
+        o_rd_wren = 0; 
+        o_br_uns = 0; 
+        o_pc_sel = 0; 
+        o_insn_vld = 0;
+        o_alu_op = 4'd10;
         case (i_instruction[6:0])
         //R_type
         7'b0110011: begin
@@ -114,17 +123,52 @@ module ctrl_unit (
             end
             endcase
         end
-            default:begin
-                o_opa_sel = 0; 
-                o_opb_sel = 0; 
-                o_mem_wren = 0; 
-                o_wb_sel = 2'b01; 
-                o_rd_wren = 0; 
+        // BR_Type
+        7'b1100011: begin 
+            o_rd_wren = 0; 
+            o_opa_sel = 1;
+            o_opb_sel = 1; 
+            o_alu_op = 5'b0000; 
+            o_wb_sel = 2'd3; 
+            o_mem_wren = 0; 
+				o_insn_vld = 1; 
+            case (i_instruction[14:12])
+            // BEQ
+            3'd0: begin
                 o_br_uns = 0; 
-                o_pc_sel = 0; 
-                o_insn_vld = 0;
-                o_alu_op = 4'd10; 
+                o_pc_sel = (i_br_equal) ? 1 : 0;
             end
+            // BNE
+            3'd1: begin
+                o_br_uns = 0; 
+                o_pc_sel = (i_br_equal) ? 0 : 1;
+            end
+            // BLT
+            3'd4: begin
+                o_br_uns = 0; 
+                o_pc_sel = (i_br_less) ? 1 : 0;
+            end
+            // BGE
+            3'd5: begin
+                o_br_uns = 0; 
+                o_pc_sel = (~i_br_less | i_br_equal) ? 1 : 0;
+            end
+            // BLTU
+            3'd6: begin
+                o_br_uns = 1; 
+                o_pc_sel = (i_br_less) ? 1 : 0;
+            end
+            // BGEU
+            3'd7: begin
+                o_br_uns = 1; 
+                o_pc_sel = (~i_br_less | i_br_equal) ? 1 : 0;
+            end
+                default: begin
+                    o_br_uns = 0;
+                    o_pc_sel = 0;
+                end
+            endcase
+        end
         endcase 
     end
 endmodule 

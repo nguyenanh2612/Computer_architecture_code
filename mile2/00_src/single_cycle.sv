@@ -3,8 +3,8 @@ module single_cycle (
     //input logic [31:0] i_io_sw, 
     //input logic [3:0] i_io_btn, 
 
-    output logic o_insn_vld, 
-    output logic [31:0] o_pc_debug,
+    output logic o_insn_vld, o_tes_br_less, o_test_br_equal, o_test_pc_sel, 
+    output logic [31:0] o_pc_debug, o_test_pc_br,  
     output logic [31:0] o_io_ledr, o_io_ledg, 
     output logic [31:0] o_test_instruct, o_test_pc_four, o_test_alu_data
    // output logic [6:0] o_io_hex [6:0], 
@@ -73,6 +73,7 @@ module single_cycle (
         .i_br_equal (br_equal), 
         .o_opa_sel (opa_sel), 
         .o_opb_sel (opb_sel), 
+        .o_pc_sel (pc_sel), 
         .o_wb_sel (wb_sel), 
         .o_alu_op (alu_op), 
         .o_mem_wren (mem_wren),
@@ -155,7 +156,12 @@ module single_cycle (
         o_insn_vld <= insn_vld; 
     end
 	 
-	assign o_test_instruct = instruct; 
+	 // test signals
+    assign o_test_instruct = instruct; 
     assign o_test_pc_four = pc_four; 
     assign o_test_alu_data = alu_data; 
+    assign o_tes_br_less = br_less; 
+    assign o_test_br_equal = br_equal; 
+    assign o_test_pc_sel = pc_sel; 
+    assign o_test_pc_br = pc_br; 
 endmodule 
