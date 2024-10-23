@@ -1,0 +1,43 @@
+addi x05, x04, 1        # x05 = x04 + 1
+addi x06, x05, 2        # x06 = x05 + 2
+slli x07, x06, 3        # x07 = x06 << 3 (shift left logical by 3)
+slti x08, x07, 1        # x08 = (x07 < 1) ? 1 : 0 (set less than immediate)
+sltiu x09, x08, 2       # x09 = (unsigned x08 < 2) ? 1 : 0 (set less than unsigned immediate)
+xori x06, x09, 2        # x06 = x09 ^ 2 (exclusive OR with immediate)
+srli x07, x06, 6        # x07 = x06 >> 6 (shift right logical by 6)
+srai x08, x07, 4        # x08 = x07 >> 4 (arithmetic shift right by 4)
+ori x09, x08, 7         # x09 = x08 | 7 (bitwise OR with immediate)
+andi x06, x09, 8        # x06 = x09 & 8 (bitwise AND with immediate)
+add x08, x05, x09       # x08 = x05 + x09
+sub x07, x09, x08       # x07 = x09 - x08
+beq x05, x06, label1    # if (x05 == x06) branch to label1
+bne x05, x06, label2    # if (x05 != x06) branch to label2
+blt x07, x08, label3    # if (x07 < x08) branch to label3
+bge x07, x08, label4    # if (x07 >= x08) branch to label4
+bltu x09, x08, label5   # if (unsigned x09 < x08) branch to label5
+bgeu x09, x08, label6   # if (unsigned x09 >= x08) branch to label6
+
+label1:
+  nop                   # No operation
+
+label2:
+  nop                   # No operation
+
+label3:
+  nop                   # No operation
+
+label4:
+  nop                   # No operation
+
+label5:
+  nop                   # No operation
+
+label6:
+  nop                   # No operation
+
+  # Load byte (signed), half-word (signed), word, byte (unsigned), half-word (unsigned) operations:
+  lb x10, 0(x05)        # Load byte from memory address x05 + 0 into x10 (signed)
+  lh x11, 4(x05)        # Load half-word from memory address x05 + 4 into x11 (signed)
+  lw x12, 8(x05)        # Load word from memory address x05 + 8 into x12
+  lbu x13, 12(x05)      # Load byte from memory address x05 + 12 into x13 (unsigned)
+  lhu x14, 16(x05)      # Load half-word from memory address x05 + 16 into x14 (unsigned)

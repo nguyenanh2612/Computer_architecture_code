@@ -3,15 +3,15 @@ module ctrl_unit (
     input logic i_br_less, i_br_equal,
     
     output logic o_opa_sel, o_opb_sel, o_pc_sel, 
-    output logic [1:0] o_wb_sel,
+    output logic [1:0] o_wb_sel, 
+    output logic [2:0] o_ld_sel,  
     output logic [3:0] o_alu_op, 
     output logic o_mem_wren, o_rd_wren, 
     output logic o_br_uns,
     output logic o_insn_vld
-);
-    
+); 
     always_comb begin
-	     o_opa_sel = 0; 
+        o_opa_sel = 0; 
         o_opb_sel = 0; 
         o_mem_wren = 0; 
         o_wb_sel = 2'b01; 
@@ -20,6 +20,7 @@ module ctrl_unit (
         o_pc_sel = 0; 
         o_insn_vld = 0;
         o_alu_op = 4'd10;
+        o_ld_sel = 3'd5; 
         case (i_instruction[6:0])
         //R_type
         7'b0110011: begin
@@ -31,6 +32,7 @@ module ctrl_unit (
             o_br_uns = 0; 
             o_pc_sel = 0; 
             o_insn_vld = 1;
+            o_ld_sel = 3'd5;
             case (i_instruction[14:12])
             // ADD + SUB
             3'd0: begin
@@ -84,6 +86,7 @@ module ctrl_unit (
             o_br_uns = 0; 
             o_pc_sel = 0; 
             o_insn_vld = 1;
+            o_ld_sel = 3'd5;
             case (i_instruction[14:12])
             // ADDI
             3'd0: begin
@@ -128,10 +131,11 @@ module ctrl_unit (
             o_rd_wren = 0; 
             o_opa_sel = 1;
             o_opb_sel = 1; 
-            o_alu_op = 5'b0000; 
+            o_alu_op = 4'b0000; 
             o_wb_sel = 2'd3; 
             o_mem_wren = 0; 
-				o_insn_vld = 1; 
+            o_insn_vld = 1; 
+            o_ld_sel = 3'd5;
             case (i_instruction[14:12])
             // BEQ
             3'd0: begin
@@ -167,6 +171,40 @@ module ctrl_unit (
                     o_br_uns = 0;
                     o_pc_sel = 0;
                 end
+            endcase
+        end
+        // LOAD_type
+        7'b0000011: begin
+            o_pc_sel = 0; 
+            o_rd_wren = 1; 
+            o_br_uns = 0; 
+            o_opa_sel = 0; 
+            o_opb_sel = 1; 
+            o_alu_op = 4'b0000; 
+            o_mem_wren = 0; 
+            o_wb_sel = 2'b10;
+            o_insn_vld = 1;
+            case (i_instruction[14:12])
+            // LB
+            3'd0: begin
+                o_ld_sel = 3'd0; 
+            end
+            // LH
+            3'd1: begin
+                o_ld_sel = 3'd1; 
+            end
+            // LW 
+            3'd2: begin
+                o_ld_sel = 3'd2; 
+            end
+            // LBU 
+            3'd4: begin
+                o_ld_sel = 3'd3; 
+            end
+            // LHU
+            3'd5: begin
+                o_ld_sel = 3'd4; 
+            end
             endcase
         end
         endcase 

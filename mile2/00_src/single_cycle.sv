@@ -3,15 +3,15 @@ module single_cycle (
     //input logic [31:0] i_io_sw, 
     //input logic [3:0] i_io_btn, 
 
-    output logic o_insn_vld, o_tes_br_less, o_test_br_equal, o_test_pc_sel, 
-    output logic [31:0] o_pc_debug, o_test_pc_br,  
+    output logic o_insn_vld, o_tes_br_less, o_test_br_equal, o_test_pc_sel, o_test_pc_stall, 
+    output logic [31:0] o_pc_debug,   
     output logic [31:0] o_io_ledr, o_io_ledg, 
-    output logic [31:0] o_test_instruct, o_test_pc_four, o_test_alu_data
+    output logic [31:0] o_test_instruct, o_test_pc_four, o_test_alu_data, o_test_wb_data
    // output logic [6:0] o_io_hex [6:0], 
    // output logic [31:0] o_io_lcd
 );
     // pc + mux for pc signal
-    logic pc_sel; 
+    logic pc_sel, pc_stall, stall_flag; 
     logic [31:0] pc_next, pc, pc_four; 
     logic [31:0] pc_br; 
 
@@ -33,11 +33,13 @@ module single_cycle (
 
     // lsu signal
     logic [31:0] ld_data; 
+    logic [31:0] new_ld_data; 
 
     // control unit signal
     logic insn_vld; 
     logic br_un, br_less, br_equal; 
     logic mem_wren; 
+    logic [2:0] ld_sel; 
 
     initial begin
         pc_four = 32'd0; 
@@ -53,6 +55,7 @@ module single_cycle (
     // Update pc at each positive clock
     pc program_counter(
         .i_clk, 
+        .i_pc_stall (pc_stall),
         .i_pc (pc_next), 
         .o_pc (pc)
     );
@@ -66,7 +69,10 @@ module single_cycle (
         .o_data (instruct)
     ); 
 
-     // control unit 
+    // Stall signal
+    assign pc_stall = (instruct[6:0] == 7'b0000011);
+
+    // Control unit 
     ctrl_unit control_unit(
         .i_instruction (instruct), 
         .i_br_less (br_less), 
@@ -75,12 +81,14 @@ module single_cycle (
         .o_opb_sel (opb_sel), 
         .o_pc_sel (pc_sel), 
         .o_wb_sel (wb_sel), 
+        .o_ld_sel (ld_sel),
         .o_alu_op (alu_op), 
         .o_mem_wren (mem_wren),
         .o_rd_wren (rd_wren), 
         .o_br_uns (br_un), 
         .o_insn_vld (insn_vld)
     );
+	 
 
     // Load + write data to register file
     regfile register_file(
@@ -131,7 +139,7 @@ module single_cycle (
     lsu load_store_unit(
         .i_clk, 
         .i_rst (i_rst_n), 
-        .i_ld_type (3'd0), 
+        .i_st_type (3'd0), 
         .i_lsu_addr (alu_data), 
         .i_st_data (rs2_data), 
         .i_lsu_wren (mem_wren), 
@@ -140,28 +148,37 @@ module single_cycle (
         .o_ld_data (ld_data)
     ); 
 
-    //Choose write back data
+    // Rewrite data
+    ld_data_rewrite new_ld (
+        .i_segment_lsu_addr (alu_data[1:0]), 
+        .i_rewrite_sel (ld_sel), 
+        .i_ld_data (ld_data),
+        .o_new_ld_data (new_ld_data)
+    ); 
+
+    // Choose write back data
     always_comb begin
         case (wb_sel)
         2'd0: wb_data = pc_four;
         2'd1: wb_data = alu_data; 
-        2'd2: wb_data = ld_data;   
+        2'd2: wb_data = new_ld_data;   
             default: wb_data = 32'd0; 
         endcase
     end
     
-    // debug signal
+    // Debug signal
     always_ff @( posedge i_clk ) begin
         o_pc_debug <= pc; 
         o_insn_vld <= insn_vld; 
     end
 	 
-	 // test signals
+	 // Test signals
     assign o_test_instruct = instruct; 
     assign o_test_pc_four = pc_four; 
     assign o_test_alu_data = alu_data; 
     assign o_tes_br_less = br_less; 
     assign o_test_br_equal = br_equal; 
     assign o_test_pc_sel = pc_sel; 
-    assign o_test_pc_br = pc_br; 
+    assign o_test_wb_data = wb_data; 
+    assign o_test_pc_stall = pc_stall;
 endmodule 
