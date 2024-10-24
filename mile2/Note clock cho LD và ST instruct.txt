@@ -1,0 +1,6 @@
+với lệnh STW => 2 clock 
+Với lệnh STB + STH => 3 clock - 4 clock => ghi đè
+Với lệnh LD => 2 clock cho tất cả lệnh LD đã có xử lý tại ngoài lsu 
+
+Với việc sử dụng nguyên lý hoạt động SDRAM dẫn đến khi access vào data memory sẽ bị tốn 1 clock nếu ko stall processor sẽ dẫn đến việc ngay tại việc đọc sẽ phải load ra ngay trước khi pc lấy instruction tiếp theo => có thể sai lệch data (32 bit có độ trễ)
+Với lệnh STB + STH cần đọc data tại địa chỉ và sử lý sau đó mới ghi vô data memory
