@@ -3,8 +3,8 @@ module single_cycle (
     //input logic [31:0] i_io_sw, 
     //input logic [3:0] i_io_btn, 
 
-    output logic o_insn_vld, o_tes_br_less, o_test_br_equal, o_test_pc_sel, o_test_pc_stall, 
-    output logic [31:0] o_pc_debug,   
+    output logic o_insn_vld, o_tes_br_less, o_test_br_equal, o_test_pc_sel, o_test_pc_stall,  o_test_mem_wren, 
+    output logic [31:0] o_pc_debug,   o_test_ld_data, o_test_rs1, o_test_rs2, 
     output logic [31:0] o_io_ledr, o_io_ledg, 
     output logic [31:0] o_test_instruct, o_test_pc_four, o_test_alu_data, o_test_wb_data
    // output logic [6:0] o_io_hex [6:0], 
@@ -31,14 +31,15 @@ module single_cycle (
     // write back signal
     logic [1:0] wb_sel; 
 
-    // lsu signal
+    // lsu signal  
     logic [31:0] ld_data; 
-    logic [31:0] new_ld_data; 
+    logic [31:0] new_ld_data, new_st_data; 
 
     // control unit signal
     logic insn_vld; 
     logic br_un, br_less, br_equal; 
     logic mem_wren; 
+    logic [1:0] st_sel; 
     logic [2:0] ld_sel; 
 
     initial begin
@@ -70,7 +71,7 @@ module single_cycle (
     ); 
 
     // Stall signal
-    assign pc_stall = (instruct[6:0] == 7'b0000011);
+    assign pc_stall = (instruct[6:0] == 7'b0000011) | (instruct[6:0] == 7'b0100011);
 
     // Control unit 
     ctrl_unit control_unit(
@@ -81,6 +82,7 @@ module single_cycle (
         .o_opb_sel (opb_sel), 
         .o_pc_sel (pc_sel), 
         .o_wb_sel (wb_sel), 
+        .o_st_sel (st_sel), 
         .o_ld_sel (ld_sel),
         .o_alu_op (alu_op), 
         .o_mem_wren (mem_wren),
@@ -133,7 +135,16 @@ module single_cycle (
     ); 
 
     // branch address  
-    assign pc_br = alu_data; 
+    assign pc_br = alu_data;   
+
+    // st data rewrite
+    st_data_rewrite new_st(
+        .i_lsu_addr_segment (alu_data[1:0]), 
+        .i_st_type (st_sel), 
+        .i_ld_data (ld_data), 
+        .i_st_data (rs2_data), 
+        .o_st_new_data (new_st_data)
+    );
 
     // lsu block
     lsu load_store_unit(
@@ -141,7 +152,7 @@ module single_cycle (
         .i_rst (i_rst_n), 
         .i_st_type (3'd0), 
         .i_lsu_addr (alu_data), 
-        .i_st_data (rs2_data), 
+        .i_st_data (new_st_data), 
         .i_lsu_wren (mem_wren), 
         .o_io_ledr, 
         .o_io_ledg, 
@@ -181,4 +192,8 @@ module single_cycle (
     assign o_test_pc_sel = pc_sel; 
     assign o_test_wb_data = wb_data; 
     assign o_test_pc_stall = pc_stall;
+    assign o_test_ld_data = new_ld_data; 
+    assign o_test_mem_wren = mem_wren; 
+    assign o_test_rs1 = rs1_data; 
+    assign o_test_rs2 = rs2_data; 
 endmodule 

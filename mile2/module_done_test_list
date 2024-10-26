@@ -26,6 +26,11 @@
                      |                              | Note: sepearating a specific block to remain the SDRAM    | 
                      |                              | in LSU and optimizing the logic element of LSU            | 
 ---------------------|------------------------------|-----------------------------------------------------------|
+     st_data_rewrite |             Done             | A block that rewrite the store data corresponding to      |
+                     |                              | STORE type instrucstion.                                  | 
+                     |                              | Note: sepearating a specific block to remain the SDRAM    | 
+                     |                              | in LSU and optimizing the logic element of LSU            | 
+---------------------|------------------------------|-----------------------------------------------------------|
 
 New will update before Tues/Oct/15/2024
 

@@ -34,10 +34,16 @@ label5:
 
 label6:
   nop                   # No operation
+  
+ sb  x07, 0(x08)        # Store the least significant byte of x10 at memory address x20 + 0
+ sh  x07, 4(x08)        # Store the least significant half-word of x11 at memory address x20 + 4
+ sw  x07, 8(x08)        # Store the word from x12 at memory address x20 + 8
+
+
 
   # Load byte (signed), half-word (signed), word, byte (unsigned), half-word (unsigned) operations:
-  lb x10, 0(x05)        # Load byte from memory address x05 + 0 into x10 (signed)
-  lh x11, 4(x05)        # Load half-word from memory address x05 + 4 into x11 (signed)
-  lw x12, 8(x05)        # Load word from memory address x05 + 8 into x12
-  lbu x13, 12(x05)      # Load byte from memory address x05 + 12 into x13 (unsigned)
-  lhu x14, 16(x05)      # Load half-word from memory address x05 + 16 into x14 (unsigned)
+ lb  x05, 0(x08)        # Load signed byte from memory address x20 + 0 into x10
+ lh  x06, 4(x08)        # Load signed half-word from memory address x20 + 4 into x11
+ lw  x07, 8(x08)        # Load word from memory address x20 + 8 into x12
+ lbu x09, 12(x08)       # Load unsigned byte from memory address x20 + 12 into x13
+ lhu x04, 16(x08)       # Load unsigned half-word from memory address x20 + 16 into x14
