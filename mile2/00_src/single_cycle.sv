@@ -1,10 +1,10 @@
 module single_cycle (
     input logic i_clk, i_rst_n,
-    //input logic [31:0] i_io_sw, 
+    input logic [31:0] i_io_sw, 
     //input logic [3:0] i_io_btn, 
 
     output logic o_insn_vld, o_tes_br_less, o_test_br_equal, o_test_pc_sel, o_test_pc_stall,  o_test_mem_wren, 
-    output logic [31:0] o_pc_debug,   o_test_ld_data, o_test_rs1, o_test_rs2, 
+    output logic [31:0] o_pc_debug,   o_test_ld_data, o_test_rs1, o_test_rs2, o_test_pc_next, 
     output logic [31:0] o_io_ledr, o_io_ledg, 
     output logic [31:0] o_test_instruct, o_test_pc_four, o_test_alu_data, o_test_wb_data
    // output logic [6:0] o_io_hex [6:0], 
@@ -32,8 +32,9 @@ module single_cycle (
     logic [1:0] wb_sel; 
 
     // lsu signal  
+    logic new_mem_wren, st_data_sel; 
     logic [31:0] ld_data; 
-    logic [31:0] new_ld_data, new_st_data; 
+    logic [31:0] new_ld_data, new_st_data,new_st_data_sw_or_new; 
 
     // control unit signal
     logic insn_vld; 
@@ -146,14 +147,24 @@ module single_cycle (
         .o_st_new_data (new_st_data)
     );
 
+    // st data sel 
+    wren_with_mm choose_data_and_mapping(
+        .i_mem_wren (mem_wren), 
+        .i_lsu_addr (alu_data), 
+        .o_mem_wren (new_mem_wren), 
+        .o_st_data_sel (st_data_sel)
+    );
+
+    assign new_st_data_sw_or_new = (st_data_sel) ? i_io_sw : new_st_data; 
+
     // lsu block
     lsu load_store_unit(
         .i_clk, 
         .i_rst (i_rst_n), 
         .i_st_type (3'd0), 
         .i_lsu_addr (alu_data), 
-        .i_st_data (new_st_data), 
-        .i_lsu_wren (mem_wren), 
+        .i_st_data (new_st_data_sw_or_new), 
+        .i_lsu_wren (new_mem_wren), 
         .o_io_ledr, 
         .o_io_ledg, 
         .o_ld_data (ld_data)
@@ -193,7 +204,8 @@ module single_cycle (
     assign o_test_wb_data = wb_data; 
     assign o_test_pc_stall = pc_stall;
     assign o_test_ld_data = new_ld_data; 
-    assign o_test_mem_wren = mem_wren; 
+    assign o_test_mem_wren = new_mem_wren; 
     assign o_test_rs1 = rs1_data; 
     assign o_test_rs2 = rs2_data; 
+    assign o_test_pc_next = pc_next; 
 endmodule 

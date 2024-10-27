@@ -157,6 +157,10 @@ module alu (
 
             o_alu_data = temp_sra;
         end
+        // LUI 
+        4'd10: begin
+            o_alu_data = i_operand_b; 
+        end
             default: o_alu_data = 32'd0; 
         endcase
     end

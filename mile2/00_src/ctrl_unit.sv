@@ -3,7 +3,7 @@ module ctrl_unit (
     input logic i_br_less, i_br_equal,
     
     output logic o_opa_sel, o_opb_sel, o_pc_sel, 
-    output logic [1:0] o_wb_sel, 
+    output logic [1:0] o_wb_sel, o_st_sel,
     output logic [2:0] o_ld_sel,  
     output logic [3:0] o_alu_op, 
     output logic o_mem_wren, o_rd_wren, 
@@ -19,8 +19,9 @@ module ctrl_unit (
         o_br_uns = 0; 
         o_pc_sel = 0; 
         o_insn_vld = 0;
-        o_alu_op = 4'd10;
+        o_alu_op = 4'd11;
         o_ld_sel = 3'd5; 
+        o_st_sel = 2'd3; 
         case (i_instruction[6:0])
         //R_type
         7'b0110011: begin
@@ -206,6 +207,76 @@ module ctrl_unit (
                 o_ld_sel = 3'd4; 
             end
             endcase
+        end
+        // STORE Type
+        7'b0100011: begin
+            o_pc_sel = 0; 
+            o_rd_wren = 0; 
+            o_insn_vld = 1; 
+            o_opa_sel = 0; 
+            o_opb_sel = 1; 
+            o_alu_op = 4'd0; 
+            o_br_uns = 0; 
+            o_mem_wren = 1;
+            o_wb_sel = 2'b11; 
+            case (i_instruction[14:12])
+            // SB
+            3'd0: begin
+                o_st_sel = 2'd0; 
+            end
+            // SH
+            3'd1: begin
+                o_st_sel = 2'd1; 
+            end
+            // SW 
+            3'd2: begin
+                o_st_sel = 2'd2; 
+            end
+            endcase
+        end
+        // LUI
+        7'b0110111: begin
+            o_pc_sel = 0; 
+            o_rd_wren = 1; 
+            o_opa_sel = 0; 
+            o_opb_sel = 1; 
+            o_alu_op = 4'd10; 
+            o_mem_wren = 0; 
+            o_wb_sel = 2'b01; 
+            o_insn_vld = 1; 
+        end
+        // AUIPC 
+        7'b0010111: begin
+            o_pc_sel = 0; 
+            o_rd_wren = 1; 
+            o_opa_sel = 1; 
+            o_opb_sel = 1; 
+            o_alu_op = 4'd0; 
+            o_mem_wren = 0; 
+            o_wb_sel = 2'b01; 
+            o_insn_vld = 1; 
+        end
+        // JAL
+        7'b1101111: begin
+            o_pc_sel = 1; 
+            o_rd_wren = 1; 
+            o_opa_sel = 1; 
+            o_opb_sel = 1; 
+            o_alu_op = 4'd0; 
+            o_mem_wren = 0; 
+            o_wb_sel = 2'b00; 
+            o_insn_vld = 1; 
+        end
+        // JALR
+        7'b1100111: begin
+            o_pc_sel = 1; 
+            o_rd_wren = 1; 
+            o_opa_sel = 0; 
+            o_opb_sel = 1; 
+            o_alu_op = 4'd0; 
+            o_mem_wren = 0; 
+            o_wb_sel = 2'b00; 
+            o_insn_vld = 1; 
         end
         endcase 
     end

@@ -43,7 +43,18 @@ label6:
 
   # Load byte (signed), half-word (signed), word, byte (unsigned), half-word (unsigned) operations:
  lb  x05, 0(x08)        # Load signed byte from memory address x20 + 0 into x10
+ addi x05, x05, 1 
  lh  x06, 4(x08)        # Load signed half-word from memory address x20 + 4 into x11
+ addi x06 x06 1 
  lw  x07, 8(x08)        # Load word from memory address x20 + 8 into x12
+ addi x07 x07 1 
  lbu x09, 12(x08)       # Load unsigned byte from memory address x20 + 12 into x13
+ addi x09, x09, 1
  lhu x04, 16(x08)       # Load unsigned half-word from memory address x20 + 16 into x14
+ addi x04 x04,1 
+ lui x05,0x12345
+ auipc x05, 0x12345
+ jal x05, 0x100
+ #alr x06,x05, 0x100
+
+
