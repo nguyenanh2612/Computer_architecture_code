@@ -4,11 +4,11 @@ module ins_mem (
 );
 
     /*Registers store the data */
-    logic [31:0] ins [0:2047]; 
+    logic [31:0] ins [2047:0]; 
     
     initial begin
-        $readmemh("instruction.txt",ins); 
+        $readmemh("D:/241/Comp_Ar/mile2/single cycle/mem.dump",ins); 
     end
 	 
 	assign o_data = ins[i_address]; 
-endmodule
+endmodule 

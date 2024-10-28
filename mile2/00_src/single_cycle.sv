@@ -3,16 +3,14 @@ module single_cycle (
     input logic [31:0] i_io_sw, 
     //input logic [3:0] i_io_btn, 
 
-    output logic o_insn_vld, o_tes_br_less, o_test_br_equal, o_test_pc_sel, o_test_pc_stall,  o_test_mem_wren, 
-    output logic [31:0] o_pc_debug,   o_test_ld_data, o_test_rs1, o_test_rs2, o_test_pc_next, 
-    output logic [31:0] o_io_ledr, o_io_ledg, 
-    output logic [31:0] o_test_instruct, o_test_pc_four, o_test_alu_data, o_test_wb_data
-   // output logic [6:0] o_io_hex [6:0], 
-   // output logic [31:0] o_io_lcd
+    output logic o_insn_vld, 
+    output logic [31:0] o_io_ledr, o_io_ledg, o_pc_debug, o_test_wb_data, o_test_instruct, o_test_ld_data,
+    output logic [6:0] o_io_hex0, o_io_hex1, o_io_hex2, o_io_hex3, o_io_hex4, o_io_hex5, o_io_hex6, o_io_hex7, 
+    output logic [31:0] o_io_lcd
 );
     // pc + mux for pc signal
     logic pc_sel, pc_stall, stall_flag; 
-    logic [31:0] pc_next, pc, pc_four; 
+    logic [31:0] pc_next, pc_cur, pc_four; 
     logic [31:0] pc_br; 
 
     // Instruction memory signal
@@ -33,7 +31,7 @@ module single_cycle (
 
     // lsu signal  
     logic new_mem_wren, st_data_sel; 
-    logic [31:0] ld_data; 
+    logic [31:0] ld_data, hex_data_1, hex_data_2; 
     logic [31:0] new_ld_data, new_st_data,new_st_data_sw_or_new; 
 
     // control unit signal
@@ -43,12 +41,6 @@ module single_cycle (
     logic [1:0] st_sel; 
     logic [2:0] ld_sel; 
 
-    initial begin
-        pc_four = 32'd0; 
-        pc_next = 32'd0; 
-        pc = 32'd0;
-    end
-
     // Update pc next 
     always_comb begin
         pc_next = (pc_sel) ? pc_br : pc_four;
@@ -57,17 +49,18 @@ module single_cycle (
     // Update pc at each positive clock
     pc program_counter(
         .i_clk, 
+        .i_rst (i_rst_n), 
         .i_pc_stall (pc_stall),
         .i_pc (pc_next), 
-        .o_pc (pc)
+        .o_pc (pc_cur)
     );
 
     // Increasing pc by 4 
-    assign pc_four = pc + 4; 
+    assign pc_four = pc_cur + 32'd4; 
 
     // Load the instruction
     ins_mem instruction_memory(
-        .i_address ({2'd0,pc[31:2]}), 
+        .i_address ({2'd0,pc_cur[31:2]}), 
         .o_data (instruct)
     ); 
 
@@ -123,7 +116,7 @@ module single_cycle (
 
     // Update operand value
     always_comb begin
-        operand_a = (opa_sel) ? pc : rs1_data; 
+        operand_a = (opa_sel) ? pc_cur : rs1_data; 
         operand_b = (opb_sel) ? immediate_value : rs2_data; 
     end
 
@@ -150,7 +143,7 @@ module single_cycle (
     // st data sel 
     wren_with_mm choose_data_and_mapping(
         .i_mem_wren (mem_wren), 
-        .i_lsu_addr (alu_data), 
+        .i_lsu_addr ({2'd0,alu_data[31:2]}), 
         .o_mem_wren (new_mem_wren), 
         .o_st_data_sel (st_data_sel)
     );
@@ -160,15 +153,27 @@ module single_cycle (
     // lsu block
     lsu load_store_unit(
         .i_clk, 
-        .i_rst (i_rst_n), 
-        .i_st_type (3'd0), 
-        .i_lsu_addr (alu_data), 
+        .i_rst (i_rst_n),  
+        .i_lsu_addr ({2'd0,alu_data[31:2]}),  
         .i_st_data (new_st_data_sw_or_new), 
         .i_lsu_wren (new_mem_wren), 
         .o_io_ledr, 
         .o_io_ledg, 
+        .o_hex_data_1 (hex_data_1), 
+        .o_hex_data_2 (hex_data_2), 
+        .o_io_lcd,  
         .o_ld_data (ld_data)
     ); 
+
+    // Update hex
+    assign o_io_hex0 =  hex_data_1[6:0];
+    assign o_io_hex1 =  hex_data_1[14:8];
+    assign o_io_hex2 =  hex_data_1[22:16];
+    assign o_io_hex3 =  hex_data_1[30:24];
+    assign o_io_hex4 =  hex_data_2[6:0];
+    assign o_io_hex5 =  hex_data_2[14:8];
+    assign o_io_hex6 =  hex_data_2[22:16];
+    assign o_io_hex7 =  hex_data_2[30:24];
 
     // Rewrite data
     ld_data_rewrite new_ld (
@@ -190,22 +195,11 @@ module single_cycle (
     
     // Debug signal
     always_ff @( posedge i_clk ) begin
-        o_pc_debug <= pc; 
+        o_pc_debug <= pc_cur; 
         o_insn_vld <= insn_vld; 
     end
-	 
-	 // Test signals
-    assign o_test_instruct = instruct; 
-    assign o_test_pc_four = pc_four; 
-    assign o_test_alu_data = alu_data; 
-    assign o_tes_br_less = br_less; 
-    assign o_test_br_equal = br_equal; 
-    assign o_test_pc_sel = pc_sel; 
+
     assign o_test_wb_data = wb_data; 
-    assign o_test_pc_stall = pc_stall;
-    assign o_test_ld_data = new_ld_data; 
-    assign o_test_mem_wren = new_mem_wren; 
-    assign o_test_rs1 = rs1_data; 
-    assign o_test_rs2 = rs2_data; 
-    assign o_test_pc_next = pc_next; 
+    assign o_test_instruct = instruct; 
+	 assign o_test_ld_data = new_ld_data; 
 endmodule 
