@@ -12,19 +12,19 @@ module st_data_rewrite (
                 o_st_new_data = {i_ld_data[31:8], i_st_data[7:0]}; 
             end
             2'd1: begin
-                o_st_new_data = {i_ld_data[31:16], i_st_data[15:8], i_ld_data[7:0]}; 
+                o_st_new_data = {i_ld_data[31:16], i_st_data[7:0], i_ld_data[7:0]}; 
             end
             2'd2: begin
-                o_st_new_data = {i_ld_data[31:24], i_st_data[23:16], i_ld_data[15:0]}; 
+                o_st_new_data = {i_ld_data[31:24], i_st_data[7:0], i_ld_data[15:0]}; 
             end
             2'd3: begin
-                o_st_new_data = {i_st_data[31:24], i_ld_data[23:0]}; 
+                o_st_new_data = {i_st_data[7:0], i_ld_data[23:0]}; 
             end
             endcase
         end
         2'd1: begin
             if (i_lsu_addr_segment[1]) begin
-                o_st_new_data = {i_st_data[31:16], i_ld_data[15:0]};
+                o_st_new_data = {i_st_data[15:0], i_ld_data[15:0]};
             end else begin
                 o_st_new_data = {i_ld_data[31:16], i_st_data[15:0]};
             end
