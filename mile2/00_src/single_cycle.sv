@@ -35,7 +35,7 @@ module single_cycle (
     logic [31:0] new_ld_data, new_st_data,new_st_data_sw_or_new; 
 
     // control unit signal
-    logic insn_vld; 
+    logic insn_vld, io_wren; 
     logic br_un, br_less, br_equal; 
     logic mem_wren; 
     logic [1:0] st_sel; 
@@ -82,6 +82,7 @@ module single_cycle (
         .o_mem_wren (mem_wren),
         .o_rd_wren (rd_wren), 
         .o_br_uns (br_un), 
+        .o_io_wren (io_wren),
         .o_insn_vld (insn_vld)
     );
 	 
@@ -154,6 +155,7 @@ module single_cycle (
     lsu load_store_unit(
         .i_clk, 
         .i_rst (i_rst_n),  
+        .i_io_wren (io_wren), 
         .i_lsu_addr ({2'd0,alu_data[31:2]}),  
         .i_st_data (new_st_data_sw_or_new), 
         .i_lsu_wren (new_mem_wren), 

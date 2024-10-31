@@ -27,8 +27,8 @@ module tb_single_cycle;
         .o_io_ledg (tb_io_ledg),
         .o_pc_debug (tb_pc_debug),  
         .o_test_wb_data (tb_wb_data), 
-		  .o_test_instruct (tb_instruct),
-		  .o_test_ld_data (tb_ld_data),
+        .o_test_instruct (tb_instruct),
+        .o_test_ld_data (tb_ld_data),
         .o_io_hex0 (tb_io_hex0), 
         .o_io_hex1 (tb_io_hex1), 
         .o_io_hex2 (tb_io_hex2), 
@@ -55,8 +55,13 @@ module tb_single_cycle;
     // Apply reset for 500ps
     #20;
     tb_rst_n = 0     ;
-    tb_io_sw = 32'hFFFFFFFF;
-    #40000 tb_rst_n = 1    ;
+    tb_io_sw = 32'h0000FFFF;
+    #50000 tb_rst_n = 1    ;
   end
-
+  
+  // Display hexadecimal outputs with labels
+  initial begin
+    $monitor("Time: %0t | tb_io_hex0: %h | tb_io_hex1: %h | tb_io_hex2: %h | tb_io_hex3: %h | tb_io_hex4: %h | tb_io_hex5: %h | tb_io_hex6: %h | tb_io_hex7: %h", 
+             $time, tb_io_hex0, tb_io_hex1, tb_io_hex2, tb_io_hex3, tb_io_hex4, tb_io_hex5, tb_io_hex6, tb_io_hex7);
+  end
 endmodule 

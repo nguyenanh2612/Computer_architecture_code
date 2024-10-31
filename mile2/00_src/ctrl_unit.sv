@@ -7,7 +7,7 @@ module ctrl_unit (
     output logic [2:0] o_ld_sel,  
     output logic [3:0] o_alu_op, 
     output logic o_mem_wren, o_rd_wren, 
-    output logic o_br_uns,
+    output logic o_br_uns, o_io_wren, 
     output logic o_insn_vld
 ); 
     always_comb begin
@@ -21,7 +21,8 @@ module ctrl_unit (
         o_insn_vld = 0;
         o_alu_op = 4'd11;
         o_ld_sel = 3'd5; 
-        o_st_sel = 2'd3; 
+        o_st_sel = 2'd3;  
+        o_io_wren = 0; 
         case (i_instruction[6:0])
         //R_type
         7'b0110011: begin
@@ -185,6 +186,7 @@ module ctrl_unit (
             o_mem_wren = 0; 
             o_wb_sel = 2'b10;
             o_insn_vld = 1;
+            o_io_wren = 1; 
             case (i_instruction[14:12])
             // LB
             3'd0: begin
@@ -209,7 +211,7 @@ module ctrl_unit (
             endcase
         end
         // STORE Type
-        7'b0100011: begin
+        7'b0100011: begin 
             o_pc_sel = 0; 
             o_rd_wren = 0; 
             o_insn_vld = 1; 

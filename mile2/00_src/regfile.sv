@@ -11,7 +11,7 @@ module regfile (
     assign o_rs1_data = register[i_rs1_addr]; 
     assign o_rs2_data = register[i_rs2_addr]; 
 
-    always_ff @( posedge i_clk ) begin
+    always_ff @( posedge i_clk or posedge i_rst) begin
         if (i_rst) begin
             register = '{default: 32'd0}; 
         end else begin
