@@ -1,0 +1,139 @@
+ initial_display_hex: 
+     li x7, 0x7020 
+     li x8, 0x40404040
+     sw x8, 0(x7)
+     sw x8, 4(x7)
+Take_data_from_sw:
+     li x7, 0x7800 
+     li x8, 0x7000
+     li x9, 0x10000
+     li x10,0x1FFFF
+update_data: 
+    sw x0, 0(x7) 
+    lw x6, 0(x7) 
+check_data: 
+    and x6,x6,x10
+    sw x6, 0(x8) 
+    blt x9,x6, execution
+    j update_data
+execution: 
+     lhu x8, 0(x7)  
+    li x16, 10000
+    li x3, 100
+    li x4, 10 
+    li x5, 1
+	
+    andi x6, x6, 0
+    andi x7, x7, 0
+    andi x9, x9, 0
+    andi x10, x10, 0 
+    andi x11, x11, 0
+thouns_s: 
+    blt x8,x16, display_number
+    sub x8,x8,x16  
+    add x6,x6,x5
+    j thouns_s
+display_number: 
+    add x2,x6,x0
+    call translate_number
+    li x7, 0x7020 
+    sb x2, 4(x7)
+    and x7,x7,x0
+    li x2, 1000
+thousand: 
+    blt x8,x2, hundred
+    sub x8,x8,x2   
+    add x7,x7,x5
+    j thousand
+hundred: 
+    blt x8,x3, decimal
+    sub x8,x8,x3   
+    add x9,x9,x5
+    j hundred
+decimal: 
+    blt x8,x4, final
+    sub x8, x8, x4
+    add x10,x10,x5
+    j decimal
+final: 
+    blt x8,x5, translate_display
+    sub x8,x8,x5
+    add x11,x11,x5
+    j final
+translate_display: 
+    li x17, 0x7020 
+    
+    add x2, x0, x11
+    call translate_number
+    sb x2, 0(x17) 
+    
+    add x2, x0, x10
+    call translate_number
+    sb x2, 1(x17) 
+    
+    add x2, x0, x9
+    call translate_number
+    sb x2, 2(x17) 
+    
+    add x2, x0, x7
+    call translate_number
+    sb x2, 3(x17) 
+    
+halt: 
+   j halt
+
+translate_number: 
+     li x15, 0
+     bne x2, x15, number_1
+     li x2, 0x40
+     ret
+number_1: 
+     li x15, 1 
+     bne x2, x15, number_2
+     li x2, 0x79
+     ret
+number_2: 
+     li x15, 2
+     bne x2, x15, number_3
+     li x2, 0x24
+     ret
+number_3: 
+     li x15, 3 
+     bne x2, x15, number_4
+     li x2, 0x30
+     ret
+number_4: 
+     li x15, 4 
+     bne x2, x15, number_5
+     li x2, 0x19
+     ret
+number_5: 
+     li x15, 5 
+     bne x2, x15, number_6 
+     li x2, 0x12 
+     ret
+number_6:
+     li x15, 6 
+     bne x2, x15, number_7
+     li x2, 0x02 
+     ret
+number_7: 
+     li x15, 7 
+     bne x2, x15, number_8
+     li x2, 0x78 
+     ret
+number_8: 
+     li x15, 8
+     bne x2, x15, number_9
+     li x2, 0x00
+     ret
+number_9: 
+     li x15, 9
+     bne x2, x15, number_0
+     li x2, 0x10
+     ret
+number_0: 
+     ret 
+
+     
+

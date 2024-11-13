@@ -1,13 +1,14 @@
 module ctrl_unit (
+    // Input
     input logic [31:0] i_instruction, 
     input logic i_br_less, i_br_equal,
-    
+    // Output
     output logic o_opa_sel, o_opb_sel, o_pc_sel, 
-    output logic [1:0] o_wb_sel, o_st_sel,
-    output logic [2:0] o_ld_sel,  
+    output logic [1:0] o_wb_sel, o_st_rewrite, 
+    output logic [2:0] o_ld_rewrite,
     output logic [3:0] o_alu_op, 
-    output logic o_mem_wren, o_rd_wren, 
-    output logic o_br_uns, o_io_wren, 
+    output logic o_mem_wren, o_rd_wren, o_rden, 
+    output logic o_br_uns, 
     output logic o_insn_vld
 ); 
     always_comb begin
@@ -20,9 +21,9 @@ module ctrl_unit (
         o_pc_sel = 0; 
         o_insn_vld = 0;
         o_alu_op = 4'd11;
-        o_ld_sel = 3'd5; 
-        o_st_sel = 2'd3;  
-        o_io_wren = 0; 
+        o_ld_rewrite = 3'd5; 
+        o_st_rewrite = 2'd3; 
+        o_rden = 0; 
         case (i_instruction[6:0])
         //R_type
         7'b0110011: begin
@@ -34,7 +35,6 @@ module ctrl_unit (
             o_br_uns = 0; 
             o_pc_sel = 0; 
             o_insn_vld = 1;
-            o_ld_sel = 3'd5;
             case (i_instruction[14:12])
             // ADD + SUB
             3'd0: begin
@@ -88,7 +88,6 @@ module ctrl_unit (
             o_br_uns = 0; 
             o_pc_sel = 0; 
             o_insn_vld = 1;
-            o_ld_sel = 3'd5;
             case (i_instruction[14:12])
             // ADDI
             3'd0: begin
@@ -137,7 +136,6 @@ module ctrl_unit (
             o_wb_sel = 2'd3; 
             o_mem_wren = 0; 
             o_insn_vld = 1; 
-            o_ld_sel = 3'd5;
             case (i_instruction[14:12])
             // BEQ
             3'd0: begin
@@ -186,27 +184,27 @@ module ctrl_unit (
             o_mem_wren = 0; 
             o_wb_sel = 2'b10;
             o_insn_vld = 1;
-            o_io_wren = 1; 
-            case (i_instruction[14:12])
+            o_rden = 1; 
+             case (i_instruction[14:12])
             // LB
             3'd0: begin
-                o_ld_sel = 3'd0; 
+                o_ld_rewrite = 3'd0; 
             end
             // LH
             3'd1: begin
-                o_ld_sel = 3'd1; 
+                o_ld_rewrite = 3'd1; 
             end
             // LW 
             3'd2: begin
-                o_ld_sel = 3'd2; 
+                o_ld_rewrite = 3'd2; 
             end
             // LBU 
             3'd4: begin
-                o_ld_sel = 3'd3; 
+                o_ld_rewrite = 3'd3; 
             end
             // LHU
             3'd5: begin
-                o_ld_sel = 3'd4; 
+                o_ld_rewrite = 3'd4; 
             end
             endcase
         end
@@ -224,15 +222,15 @@ module ctrl_unit (
             case (i_instruction[14:12])
             // SB
             3'd0: begin
-                o_st_sel = 2'd0; 
+                o_st_rewrite = 2'd0; 
             end
             // SH
             3'd1: begin
-                o_st_sel = 2'd1; 
+                o_st_rewrite = 2'd1; 
             end
             // SW 
             3'd2: begin
-                o_st_sel = 2'd2; 
+                o_st_rewrite = 2'd2; 
             end
             endcase
         end

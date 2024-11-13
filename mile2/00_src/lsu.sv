@@ -1,66 +1,175 @@
 module lsu (
-    input logic i_clk, i_rst, i_io_wren, 
-    input logic [31:0] i_lsu_addr, 
+    // Input 
+    input logic i_clk, i_rst, i_mem_wren, i_rden, 
+    input logic [1:0] i_st_rewrite, 
+    input logic [31:0] i_lsu_addr,
     input logic [31:0] i_st_data, 
-    input logic i_lsu_wren, 
-
-    output logic [31:0] o_io_ledr,o_io_ledg, o_hex_data_1, o_hex_data_2, o_io_lcd, 
-    output logic [31:0] o_ld_data	 
+    input logic [17:0] i_io_sw, 
+    input logic [3:0] i_io_btn,
+    // Output sram controller
+    output logic o_ack, 
+    output logic [17:0] o_sram_addr,
+    inout  wire [15:0] o_sram_dq,  
+    output logic o_ce, 
+    output logic o_we, 
+    output logic o_lb, 
+    output logic o_ub, 
+    output logic o_oe, 
+    // Output peripheral
+    output logic [31:0] o_io_ledr, o_io_ledg, o_hex_data_1, o_hex_data_2, o_io_lcd,
+    output logic [31:0] o_ld_data
 );
+    
+    // Register of input and output peripheral
+    logic [31:0] output_peripheral [15:0];
+    logic [31:0] input_peripheral [8:0]; 
 
-    logic [31:0] ram [7687:0]; 
-	 initial begin
-	     ram = '{default: 32'd0};
-	 end 
+    // Addr immediate
+    logic [31:0] addr_shift; 
+    logic [31:0] addr_hold; 
 
+    // Wire new st data
+    logic [31:0] new_st_data; 
+
+    // Sram signal 
+    logic sram_enable,ack; 
+    logic [31:0] memory_data; 
+
+    // Shift right addr 2 bits
+    assign addr_shift = {2'b00,i_lsu_addr[31:2]}; 
+
+/*****************************************Initial of input and output ***************************************/
+    initial begin
+        output_peripheral <= '{default: 32'd0}; 
+        input_peripheral <= '{default: 32'd0}; 
+    end
+
+/***************************************** Control IP Sram****************************************************/
+    always_comb begin
+        if (addr_shift[31:12] == 20'h00000 & addr_shift[11] & (i_mem_wren || i_rden)) begin
+            sram_enable = 1; 
+            o_ack = ack;
+        end else begin
+            sram_enable = 0; 
+            o_ack = 1; 
+        end
+    end
+
+    sram_IS61WV25616_controller_32b_3lr sram_controller(
+        .i_clk, 
+        .i_reset (!i_rst),
+
+        .i_ADDR     (i_lsu_addr[17:0]),
+        .i_WDATA    (i_st_data),
+        .i_BMASK    (4'b1111),
+        .i_WREN     (i_mem_wren & sram_enable),
+        .i_RDEN     (i_rden & sram_enable),
+        .o_RDATA    (memory_data),
+        .o_ACK      (ack),
+
+        .SRAM_ADDR  (o_sram_addr),
+        .SRAM_DQ    (o_sram_dq),
+        .SRAM_CE_N  (o_ce),
+        .SRAM_WE_N  (o_we),
+        .SRAM_LB_N  (o_lb),
+        .SRAM_UB_N  (o_ub),
+        .SRAM_OE_N  (o_oe)
+    ); 
+
+    assign o_oe = 1'b0; 
+
+/*****************************************Rewrite st data for SB SH *******************************************/
+    st_data_rewrite st_rewrite(
+        .i_lsu_addr_segment (i_lsu_addr[1:0]),
+        .i_st_type (i_st_rewrite), 
+        .i_ld_data (output_peripheral[addr_shift[3:0]]), 
+        .i_st_data (i_st_data), 
+        .o_st_new_data (new_st_data)
+    );
+
+/*****************************************Output peripheral update*********************************************/
     always_ff @( posedge i_clk or posedge i_rst ) begin
         if (i_rst) begin
-            o_ld_data <= 32'd0; 
+            output_peripheral <= '{default: 32'd0}; 
+        end else begin
+            if (addr_shift[31:4] == 28'h00001C0 && i_mem_wren) begin
+                output_peripheral[addr_shift[3:0]] <= new_st_data; 
+            end else begin
+                output_peripheral[addr_shift[3:0]] <= output_peripheral[addr_shift[3:0]]; 
+            end
+        end
+    end 
+
+/****************************************Input peripheral update************************************************/   
+    always_ff @( posedge i_clk or posedge i_rst ) begin
+        if (i_rst) begin
+            input_peripheral <= '{default: 32'd0}; 
+        end else begin
+            if ((addr_shift == 32'h00001E00 || addr_shift == 32'h00001E01 || addr_shift == 32'h00001E02 || addr_shift == 32'h00001E03) && i_mem_wren) begin
+                input_peripheral[addr_shift[3:0]] <= {14'd0,i_io_sw};
+            end else if ((addr_shift == 32'h00001E04 || addr_shift == 32'h00001E05 || addr_shift == 32'h00001E06 || addr_shift == 32'h00001E07) && i_mem_wren) begin
+                input_peripheral[addr_shift[3:0]] <= {18'd0,i_io_btn};
+            end else begin
+                input_peripheral[addr_shift[3:0]] <= input_peripheral[addr_shift[3:0]];
+            end
+        end
+    end
+
+/****************************************Output the lsu**********************************************************/
+    always_ff @( posedge i_clk ) begin
+        addr_hold <= addr_shift; 
+    end
+
+    always_ff @( posedge i_clk or posedge i_rst ) begin 
+        if (i_rst) begin 
             o_io_ledr <= 32'd0; 
             o_io_ledg <= 32'd0;
             o_io_lcd <= 32'd0; 
-            o_hex_data_1 <= 32'd0; 
-            o_hex_data_2 <= 32'd0; 
+            o_hex_data_1 <= 32'd0;
+            o_hex_data_2 <= 32'd0;
         end else begin
-            if (i_lsu_wren) begin
-                ram[i_lsu_addr] <= i_st_data;
-            end 
-            o_ld_data <= ram[i_lsu_addr];
-					 
-		    // Update o_io_ledr
-            if ((i_lsu_addr == 32'h00001C00 || i_lsu_addr == 32'h00001C01 || i_lsu_addr == 32'h00001C02 || i_lsu_addr == 32'h00001C03) && i_io_wren) begin
-                o_io_ledr <= {14'd0,o_ld_data[17:0]};
+            // Update o_io_ledr
+            if (addr_hold == 32'h00001C00 || addr_hold == 32'h00001C01 || addr_hold == 32'h00001C02 || addr_hold == 32'h00001C03) begin
+                o_io_ledr <= output_peripheral[addr_hold[3:0]];
             end else begin
                 o_io_ledr <= o_io_ledr; 
             end
-
             // Update o_io_ledg
-            if ((i_lsu_addr == 32'h00001C04 || i_lsu_addr == 32'h00001C05 || i_lsu_addr == 32'h00001C06 || i_lsu_addr == 32'h00001C07) && i_io_wren ) begin
-                o_io_ledg <= {24'd0,o_ld_data[7:0]};
+            if (addr_hold == 32'h00001C04 || addr_hold == 32'h00001C05 || addr_hold == 32'h00001C06 || addr_hold == 32'h00001C07) begin
+                o_io_ledg <= output_peripheral[addr_hold[3:0]];
             end else begin
                 o_io_ledg <= o_io_ledg; 
             end
-
             // update o_hex_data
-            if (i_lsu_addr == 32'h00001C08 && i_io_wren) begin
-                o_hex_data_1 <= o_ld_data;
+            if (addr_hold == 32'h00001C08) begin
+                o_hex_data_1 <= output_peripheral[addr_hold[3:0]];
             end else begin
                 o_hex_data_1 <= o_hex_data_1; 
             end
-
-            if (i_lsu_addr == 32'h00001C09 && i_io_wren) begin
-                o_hex_data_2 <= o_ld_data;
+            if (addr_hold == 32'h00001C09) begin
+                o_hex_data_2 <= output_peripheral[addr_hold[3:0]];
             end else begin
                 o_hex_data_2 <= o_hex_data_2; 
             end
-
             // Update o_io_lcd
-            if ((i_lsu_addr == 32'h00001C0C || i_lsu_addr == 32'h00001C0D || i_lsu_addr == 32'h00001C0E || i_lsu_addr == 32'h00001C0F) && i_io_wren) begin
-                o_io_lcd <= o_ld_data;
+            if (addr_hold == 32'h00001C0C || addr_hold == 32'h00001C0D || addr_hold == 32'h00001C0E || addr_hold == 32'h00001C0F) begin
+                o_io_lcd <= output_peripheral[addr_hold[3:0]];
             end else begin
                 o_io_lcd <= o_io_lcd; 
-            end
-        end 
+            end 
+        end
     end
-	
-endmodule 
+
+/****************************************Output the ld data**********************************************************/
+    always_comb begin
+        if (addr_shift[31:4] == 28'h00001C0) begin
+            o_ld_data = output_peripheral[addr_shift[3:0]];
+        end else if (addr_shift[31:4] == 28'h00001E0) begin 
+            o_ld_data = input_peripheral[addr_shift[3:0]];
+        end else if (addr_shift[31:12] == 20'h00000 & addr_shift[11]) begin
+            o_ld_data = memory_data; 
+        end else begin
+            o_ld_data = 32'd0; 
+        end
+    end
+endmodule

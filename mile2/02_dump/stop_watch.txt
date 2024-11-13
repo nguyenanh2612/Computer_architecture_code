@@ -1,0 +1,181 @@
+base_addr: 
+     li x5, 0x7800 # switch addr
+     li x6, 0x7000 # ledr addr
+     li x7, 0x7020 # 7 led segment 
+
+reset_value: 
+     and x8, x8, x0
+     and x9, x9, x0
+     and x10, x10, x0
+     and x11, x11, x0
+     and x12, x12, x0 
+     and x13, x13, x0
+     and x14, x14, x0
+     and x15, x15, x0 
+initial_display:
+     li x8, 0x40404040  # 0000 on 7 led segment 
+     sw x8, 0(x7)       # display on 7 led segment     
+     sw x8, 4(x7) 
+     and x8,x8,x0       # clear r8 
+
+Check_sw_start:
+     sw x0, 0(x5)       # write switch data 
+     lw x8, 0(x5)       # read switch data 
+     andi x8, x8, 1 
+     sw x8, 0(x6)
+     bne  x8,x0, start_delay
+     j Check_sw_start
+
+start_delay:
+     li x8, 1000000#25000000
+
+delay: 
+     li x16, 1 
+     beq x8, x0, increase_s
+     sub x8, x8, x16
+     j delay
+   
+increase_s: 
+     li x9, 9
+     beq x10, x9, increase_s_1  
+     addi x10, x10, 1 
+     j display
+
+increase_s_1: 
+     li x18, 5
+     beq x11, x18, increase_m
+     addi x11, x11, 1
+     and x10, x10, x0
+     j display 
+
+increase_m: 
+     beq x12, x9, increase_m_1
+     addi x12, x12, 1
+     and x10, x10, x0
+     and x11, x11, x0
+     j display
+
+increase_m_1: 
+     beq x13, x18, increase_h
+     addi x13, x13, 1
+     and x10, x10, x0
+     and x11, x11, x0
+     and x12, x12, x0
+     j display
+     
+increase_h: 
+     li x16, 2
+     beq x14, x9, increase_h_1  
+     call check_h
+     addi x14, x14, 1
+     and x10, x10, x0
+     and x11, x11, x0
+     and x12, x12, x0
+     and x13, x13, x0 
+     j display
+
+increase_h_1: 
+     addi x15, x15, 1
+     and x10, x10, x0
+     and x11, x11, x0
+     and x12, x12, x0
+     and x13, x13, x0
+     and x14, x14, x0 
+     j display 
+
+check_h:
+    li x17, 3             # Load 4 vào thanh ghi x17 để kiểm tra hàng đơn vị của giờ
+    beq x14, x17, check_h_1  # Nếu x14 (hàng đơn vị) là 4, chuyển đến reset_time
+    ret             # Nếu chưa đạt 24 giờ, quay lại hiển thị
+check_h_1: 
+    beq x15, x16, reset_time
+    ret
+    
+reset_time:
+    and x10, x10, x0       # Đặt lại giây (x10) về 0
+    and x11, x11, x0       # Đặt lại hàng chục của giây (x11) về 0
+    and x12, x12, x0       # Đặt lại phút (x12) về 0
+    and x13, x13, x0       # Đặt lại hàng chục của phút (x13) về 0
+    and x14, x14, x0       # Đặt lại giờ (x14) về 0
+    and x15, x15, x0       # Đặt lại hàng chục của giờ (x15) về 0
+    j display              # Quay lại hiển thị
+
+display: 
+    add x2,x0, x10
+    call translate_number 
+    sb x2, 2(x7)
+    
+    add x2,x0, x11 
+    call translate_number 
+    sb x2, 3(x7)
+    
+    add x2,x0, x12
+    call translate_number 
+    sb x2, 4(x7)
+    
+    add x2,x0, x13
+    call translate_number 
+    sb x2, 5(x7)
+    
+    add x2,x0, x14
+    call translate_number 
+    sb x2, 6(x7)
+    
+    add x2,x0, x15
+    call translate_number 
+    sb x2, 7(x7)
+
+    j Check_sw_start 
+     
+translate_number: 
+     li x19, 0
+     bne x2, x19, number_1
+     li x2, 0x40
+     ret
+number_1: 
+     li x19, 1 
+     bne x2, x19, number_2
+     li x2, 0x79
+     ret
+number_2: 
+     li x19, 2
+     bne x2, x19, number_3
+     li x2, 0x24
+     ret
+number_3: 
+     li x19, 3 
+     bne x2, x19, number_4
+     li x2, 0x30
+     ret
+number_4: 
+     li x19, 4 
+     bne x2, x19, number_5
+     li x2, 0x19
+     ret
+number_5: 
+     li x19, 5 
+     bne x2, x19, number_6 
+     li x2, 0x12 
+     ret
+number_6:
+     li x19, 6 
+     bne x2, x19, number_7
+     li x2, 0x02 
+     ret
+number_7: 
+     li x19, 7 
+     bne x2, x19, number_8
+     li x2, 0x78 
+     ret
+number_8: 
+     li x19, 8
+     bne x2, x19, number_9
+     li x2, 0x00
+     ret
+number_9: 
+     li x19, 9
+     bne x2, x19, number_0
+     li x2, 0x10
+     ret
+number_0: 
+     ret 
