@@ -7,7 +7,7 @@ module ins_mem (
     logic [31:0] ins [2047:0]; 
     
     initial begin
-        $readmemh("D:/241/Comp_Ar/mile2/new single cycle/02_dump/mem.dump",ins); 
+        $readmemh("D:/241/Comp_Ar/mile 2 final/02_test/dump/mem.dump",ins); 
     end
 	 
 	assign o_data = ins[i_address]; 

@@ -1,9 +1,13 @@
 module st_data_rewrite (
+    // Input 
     input logic [1:0] i_lsu_addr_segment,  i_st_type, 
     input logic [31:0] i_ld_data, 
     input logic [31:0] i_st_data, 
+    // Output 
     output logic [31:0] o_st_new_data
 );
+
+/***************************************** Store rewrite calculation ***************************************/
     always_comb begin
         case (i_st_type)
         2'd0: begin

@@ -34,47 +34,56 @@ module ctrl_unit (
             o_rd_wren = 1; 
             o_br_uns = 0; 
             o_pc_sel = 0; 
-            o_insn_vld = 1;
             case (i_instruction[14:12])
             // ADD + SUB
             3'd0: begin
                 if (i_instruction[30]) begin
                     o_alu_op = 4'b0001; 
+                    o_insn_vld = (i_instruction[31:25] == 7'b0100000);
                 end else begin
                     o_alu_op = 4'b0000;
+                    o_insn_vld = (i_instruction[31:25] == 7'd0);
                 end
             end
             //SLL
             3'd1: begin
                 o_alu_op = 4'b0111; 
+                o_insn_vld = (i_instruction[31:25] == 7'd0);
             end
             //SLT 
             3'd2: begin
                 o_alu_op = 4'b0010; 
+                o_insn_vld = (i_instruction[31:25] == 7'd0);
             end
             //SLTU 
             3'd3: begin
                 o_alu_op = 4'b0011; 
+                o_insn_vld = (i_instruction[31:25] == 7'd0); 
             end
             //XOR
             3'd4: begin
                 o_alu_op = 4'b0100; 
+                o_insn_vld = (i_instruction[31:25] == 7'd0);
             end
             //SRL + SRA
             3'd5: begin
                 if (i_instruction[30]) begin
                     o_alu_op = 4'b1001; 
+                    o_insn_vld = (i_instruction[31:25] == 7'b0100000);
                 end else begin
                     o_alu_op = 4'b1000; 
+                    o_insn_vld = (i_instruction[31:25] == 7'd0); 
                 end
             end
             //OR
             3'd6: begin
                 o_alu_op = 4'b0101; 
+                o_insn_vld = (i_instruction[31:25] == 7'd0);
             end
             //AND  
             3'd7: begin
                 o_alu_op = 4'b0110; 
+                o_insn_vld = (i_instruction[31:25] == 7'd0);
             end
             endcase
         end
@@ -96,6 +105,7 @@ module ctrl_unit (
             //SLLI
             3'd1: begin
                 o_alu_op = 4'b0111; 
+                o_insn_vld = (i_instruction[31:26] == 6'd0); 
             end
             //SLTI
             3'd2: begin
@@ -113,8 +123,10 @@ module ctrl_unit (
             3'd5: begin
                 if (i_instruction[30]) begin
                     o_alu_op = 4'b1001; 
+                    o_insn_vld = (i_instruction[31:26] == 6'b010000);
                 end else begin
                     o_alu_op = 4'b1000; 
+                    o_insn_vld = (i_instruction[31:26] == 6'b000000);
                 end
             end
             //ORI

@@ -1,9 +1,13 @@
 module ld_data_rewrite (
+    // Input 
     input logic [1:0] i_segment_lsu_addr, 
     input logic [2:0] i_rewrite_sel, 
     input logic [31:0] i_ld_data, 
+    // Output 
     output logic [31:0] o_new_ld_data
 );
+
+/***************************************** Rewrite calculation  ***************************************/
     always_comb begin
         case (i_rewrite_sel)
         // LB

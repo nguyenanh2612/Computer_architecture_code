@@ -1,13 +1,18 @@
 module imme (
+    // Input 
     input logic [31:0] i_instruction, 
+    // Output
     output logic [31:0] o_imme_value
 ); 
-   
+
+/*****************************************Immediate label ***************************************/
     logic [19:0] sign_extend; 
     logic [31:0] imme_value;
 
+/*****************************************Prepare extended ***************************************/
     assign sign_extend = (i_instruction[31]) ? 20'hFFFFF : 20'd0; 
 
+/*****************************************Extend case ***************************************/
     always_comb begin
         if ((i_instruction[6:0] == 7'b0010011) || (i_instruction[6:0] == 7'b0000011) || (i_instruction[6:0] == 7'b1100111)) begin //I_Type + LD_type + JALR
             imme_value = {sign_extend,i_instruction[31:20]};
@@ -24,5 +29,6 @@ module imme (
         end
     end
 
+/***************************************** Output  ***************************************/
     assign o_imme_value = imme_value; 
 endmodule 

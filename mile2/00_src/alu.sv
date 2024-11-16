@@ -1,18 +1,22 @@
 module alu (
+    // Input 
     input logic [31:0] i_operand_a, i_operand_b, 
     input logic [3:0] i_alu_op, 
+    // Output 
     output logic [31:0] o_alu_data
 );
 
+/*****************************************Immediate label ***************************************/
     logic common_signed; 
     logic [31:0] arimethic_signed_shift; 
     logic [32:0] subtrac_result; 
 
-
+/*****************************************Prepare calculation ***************************************/
     assign common_signed = (i_operand_a[31] == i_operand_b[31]); 
     assign subtrac_result = i_operand_a + ~i_operand_b + 1; 
     assign arimethic_signed_shift  = (i_operand_a[31]) ? 32'hFFFFFFFF : 32'd0; 
 
+/*****************************************ALU calculation ***************************************/
     always_comb begin
         case (i_alu_op)
         //ADD
