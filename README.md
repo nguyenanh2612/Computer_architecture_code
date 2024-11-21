@@ -24,17 +24,11 @@ Design 2 basic architechtures of RISC_V: single-cycle and pipelined.
 4. **Control unit signal excel**
    - Link for single cycle: https://docs.google.com/spreadsheets/d/1aaAOjJfxVr4wakKfACmRoRKg5aqppr6bIWHU7UIUbmI/edit?usp=sharing
    - link for pipeline    : update later
-5. **Predicted question**
-   - Data flow: 
-      + Explain or show the longest datapath (signals change mode of each block). 
-      + Shortest datapath. 
-      + The different between R, I, BR, LOAD, STORE instructions. 
-   - Code
-      + Mode of some blocks (LSU, ALU)
-      + The reason why we have 2 blocks (st_rewrite and ld_rewrite). 
-      + FSM of SRAM IP Controller. 
-      + Explain the concatenation of ImmGen module. 
-
+5. **Testbench**
+   Chạy trên Console transcript của modelsim nha ko phải coi waveform. 
+   Tao có hệ thống lại một tí như sau: 
+      + Với FETCH, thì sẽ test câu lênh đưa ra nếu đúng thì PASS hết ko thì sẽ FAILED và câu lệnh sai. 
+      + Với DECODE, test lại cách lưu ghi, đọc với regfile và hoạt động của ImmGen (phần này t hơi lười ae có được thì thêm test phần này thêm 1 số trường hợp nha t mới test trường hợp default: 0 thôi=)) ).  
 ## Note
   Any new ignores, it will be updated later.
       
