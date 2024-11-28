@@ -16,7 +16,7 @@ module regfile (
     assign o_rs2_data = register[i_rs2_addr]; 
 
 /***************************************** Write data to destination register ***************************************/
-    always_ff @( posedge i_clk or posedge i_rst) begin
+    always_ff @( negedge i_clk or posedge i_rst) begin
         if (i_rst) begin
             register = '{default: 32'd0}; 
         end else begin

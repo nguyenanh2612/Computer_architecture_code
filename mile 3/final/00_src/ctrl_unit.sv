@@ -2,7 +2,7 @@ module ctrl_unit (
     // Input 
     input logic [31:0] i_instruct,
     // Output 
-    output logic o_pc_sel, o_rd_wren, o_mem_rden, o_mem_wren, o_br_unsigned, o_insn_vld, o_imme_sel, 
+    output logic o_pc_sel, o_rd_wren, o_mem_rden, o_mem_wren, o_br_unsigned, o_insn_vld, o_imme_sel, o_rs1_sel, 
     output logic [3:0] o_alu_op, 
     output logic [2:0] o_ld_rewrite, 
     output logic [1:0] o_st_rewrite, o_wb_sel
@@ -12,12 +12,14 @@ module ctrl_unit (
 /**************************************** Control unit's output signals *******************************************/
     always_comb begin
         case (i_instruct[6:0])
-        // R-type
+/**************************************** R type *******************************************/
         7'b0110011: begin
             // PC selection
             o_pc_sel = 1'b0;
             // Register file write enable 
             o_rd_wren = 1'b1; 
+            // PC value selection in EX stage
+            o_rs1_sel = 1'b0;
             // Immediate value selection 
             o_imme_sel = 1'b0; 
             // Signed enable branch calculation 
@@ -121,12 +123,14 @@ module ctrl_unit (
             end
             endcase
         end
-        // I-type 
+/**************************************** I type *******************************************/
         7'b0010011: begin
             // PC selection
             o_pc_sel = 1'b0;
             // Register file write enable 
             o_rd_wren = 1'b1; 
+            // PC value selection in EX stage
+            o_rs1_sel = 1'b0;
             // Immediate value selection 
             o_imme_sel = 1'b1; 
             // Signed enable branch calculation 
@@ -192,11 +196,185 @@ module ctrl_unit (
             end 
             endcase
         end 
+/**************************************** LUI *******************************************/
+        7'b0110111: begin
+            // PC selection
+            o_pc_sel = 1'b0;
+            // Register file write enable 
+            o_rd_wren = 1'b1; 
+            // PC value selection in EX stage
+            o_rs1_sel = 1'b0;
+            // Immediate value selection 
+            o_imme_sel = 1'b1; 
+            // Signed enable branch calculation 
+            o_br_unsigned = 1'b0; 
+            // Mem read enable
+            o_mem_rden = 1'b0; 
+            // Mem write enable 
+            o_mem_wren = 1'b0; 
+            // Load rewrite
+            o_ld_rewrite = 3'd5; 
+            // Store rewrite
+            o_st_rewrite = 2'd3; 
+            // Write back satge's data
+            o_wb_sel = 2'd1;
+            // ALU operation selection 
+            o_alu_op = 4'd10; 
+            // Instruction valid 
+            o_insn_vld = 1'b1;
+        end
+/**************************************** AUIPC *******************************************/
+        7'b0010111: begin
+            // PC selection
+            o_pc_sel = 1'b0;
+            // Register file write enable 
+            o_rd_wren = 1'b1; 
+            // PC value selection in EX stage
+            o_rs1_sel = 1'b1;
+            // Immediate value selection 
+            o_imme_sel = 1'b1; 
+            // Signed enable branch calculation 
+            o_br_unsigned = 1'b0; 
+            // Mem read enable
+            o_mem_rden = 1'b0; 
+            // Mem write enable 
+            o_mem_wren = 1'b0; 
+            // Load rewrite
+            o_ld_rewrite = 3'd5; 
+            // Store rewrite
+            o_st_rewrite = 2'd3; 
+            // Write back satge's data
+            o_wb_sel = 2'd1;
+            // ALU operation selection 
+            o_alu_op = 4'd0; 
+            // Instruction valid 
+            o_insn_vld = 1'b1;
+        end
+/**************************************** LOAD *******************************************/
+        7'b0000011: begin
+            // PC selection
+            o_pc_sel = 1'b0;
+            // Register file write enable 
+            o_rd_wren = 1'b1; 
+            // PC value selection in EX stage
+            o_rs1_sel = 1'b0;
+            // Immediate value selection 
+            o_imme_sel = 1'b1; 
+            // Signed enable branch calculation 
+            o_br_unsigned = 1'b0; 
+            // Mem read enable
+            o_mem_rden = 1'b1; 
+            // Mem write enable 
+            o_mem_wren = 1'b0;  
+            // Store rewrite
+            o_st_rewrite = 2'd3; 
+            // Write back satge's data
+            o_wb_sel = 2'd2;
+            // ALU operation selection 
+            o_alu_op = 4'd0; 
+            case (i_instruct[14:12])
+            // LB
+            3'd0: begin
+                // Load rewrite
+                o_ld_rewrite = 3'd0;
+                // Instruction valid 
+                o_insn_vld = 1'b1;
+            end 
+            // LH
+            3'd1: begin
+                // Load rewrite
+                o_ld_rewrite = 3'd1;
+                // Instruction valid 
+                o_insn_vld = 1'b1;
+            end 
+            // LW
+            3'd2: begin
+                // Load rewrite
+                o_ld_rewrite = 3'd2;
+                // Instruction valid 
+                o_insn_vld = 1'b1;
+            end 
+            // LBU
+            3'd4: begin
+                // Load rewrite
+                o_ld_rewrite = 3'd3;
+                // Instruction valid 
+                o_insn_vld = 1'b1;
+            end 
+            // LHU
+            3'd5: begin
+                // Load rewrite
+                o_ld_rewrite = 3'd4;
+                // Instruction valid 
+                o_insn_vld = 1'b1;
+            end 
+                default: begin
+                    // Load rewrite
+                    o_ld_rewrite = 3'd5;
+                    // Instruction valid 
+                    o_insn_vld = 1'b0;
+                end
+            endcase
+        end
+/**************************************** STORE *******************************************/
+        7'b0100011: begin
+            // PC selection
+            o_pc_sel = 1'b0;
+            // Register file write enable 
+            o_rd_wren = 1'b0; 
+            // PC value selection in EX stage
+            o_rs1_sel = 1'b0;
+            // Immediate value selection 
+            o_imme_sel = 1'b1; 
+            // Signed enable branch calculation 
+            o_br_unsigned = 1'b0; 
+            // Mem read enable
+            o_mem_rden = 1'b0; 
+            // Mem write enable 
+            o_mem_wren = 1'b1;  
+            // Load rewrite
+            o_ld_rewrite = 3'd5;
+            // Write back satge's data
+            o_wb_sel = 2'd3;
+            // ALU operation selection 
+            o_alu_op = 4'd0; 
+            case (i_instruct[14:12])
+            // SB
+            3'd0: begin
+                // Store rewrite
+                o_st_rewrite = 2'd0;
+                // Instruction valid 
+                o_insn_vld = 1'b1;
+            end 
+            // SH
+            3'd1: begin
+                // Store rewrite
+                o_st_rewrite = 2'd1;
+                // Instruction valid 
+                o_insn_vld = 1'b1;
+            end 
+            // SW
+            3'd2: begin
+                // Store rewrite
+                o_st_rewrite = 2'd2;
+                // Instruction valid 
+                o_insn_vld = 1'b1;
+            end 
+                default: begin
+                    // Store rewrite
+                    o_st_rewrite = 2'd3;
+                    // Instruction valid 
+                    o_insn_vld = 1'b0;
+                end
+            endcase
+        end
             default: begin
                 // PC selection
                 o_pc_sel = 1'b0;
                 // Register file write enable 
                 o_rd_wren = 1'b0; 
+                // PC value selection in EX stage
+                o_rs1_sel = 1'b0;
                 // Immediate value selection 
                 o_imme_sel = 1'b0; 
                 // Signed enable branch calculation 

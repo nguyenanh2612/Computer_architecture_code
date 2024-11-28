@@ -4,8 +4,7 @@ module pipeline (
     // Input 
     // Output
     output logic [1:0] o_fw_a, o_fw_b,
-    output logic [4:0] o_rs1_addr, o_rs2_addr, o_mem_rd_addr, o_wb_rd_addr,
-    output logic [31:0] o_instruct, o_alu_data,  
+    output logic [31:0] o_pc_debug, o_alu_d, 
     output logic [31:0] o_wb_data
 );
 /************************************************** Immediate signals **************************************/ 
@@ -25,7 +24,7 @@ module pipeline (
     logic [31:0] id_imme_value; 
     // Ctrl's output signals
     // EX register
-    logic id_imme_sel; 
+    logic id_imme_sel, id_rs1_sel; 
     logic id_br_unsigned;
     logic [3:0] id_alu_op; 
     // MEM register
@@ -46,7 +45,7 @@ module pipeline (
     logic [31:0] ex_imme_value; 
 
     // EX register
-    logic ex_imme_sel; 
+    logic ex_imme_sel, ex_rs1_sel; 
     logic ex_br_unsigned;
     logic [3:0] ex_alu_op; 
     // MEM register
@@ -60,7 +59,6 @@ module pipeline (
 
     logic [31:0] ex_alu_data;
     logic [31:0] ex_st_data;
-    logic [31:0] ex_pc_br; 
     logic [1:0] ex_fw_a, ex_fw_b; 
 
     // Mem's output signals 
@@ -140,7 +138,7 @@ module pipeline (
        .o_rd_addr        (id_rd_addr), 
        .o_rs1_data       (id_rs1_data), 
        .o_rs2_data       (id_rs2_data),      
-       .o_imme_value     (id_imme_value), 
+       .o_imme_value     (id_imme_value) 
     ); 
 /************************************************** Control unit  *******************************************/
     ctrl_unit Control_unit(
@@ -154,6 +152,7 @@ module pipeline (
        .o_br_unsigned       (id_br_unsigned), 
        .o_insn_vld          (id_insn_vld), 
        .o_imme_sel          (id_imme_sel),
+       .o_rs1_sel           (id_rs1_sel), 
        .o_alu_op            (id_alu_op), 
        .o_ld_rewrite        (id_ld_rewrite), 
        .o_st_rewrite        (id_st_rewrite),
@@ -169,16 +168,18 @@ module pipeline (
        .i_ex_read                     (ex_mem_rden),
        // Output 
        .o_pc_enable                   (pc_enable), 
-       .o_if_id_register_enable       (if_id_enable), 
+       .o_if_id_register_enable       (if_id_enable)
     );
 /************************************************** ID to EX register  *******************************************/
     // EX register
     always_ff @( posedge i_clk or posedge i_rst ) begin
         if (i_rst) begin
+            ex_rs1_sel <= 1'b0; 
             ex_imme_sel <= 1'b0; 
             ex_br_unsigned <= 1'b0; 
             ex_alu_op <= 4'd11;
         end else begin
+            ex_rs1_sel <= id_rs1_sel; 
             ex_imme_sel <= id_imme_sel; 
             ex_br_unsigned <= id_br_unsigned;
             ex_alu_op <= id_alu_op;
@@ -247,10 +248,10 @@ module pipeline (
        .i_forward_A           (ex_fw_a), 
        .i_forward_B           (ex_fw_b), 
        .i_imme_sel            (ex_imme_sel),
+       .i_rs1_sel             (ex_rs1_sel), 
        // Output  
        .o_alu_data            (ex_alu_data), 
-       .o_operand_b           (ex_st_data), 
-       .o_pc_br               (ex_pc_br) 
+       .o_operand_b           (ex_st_data)
     ); 
 
     forwarding_control FW(
@@ -306,7 +307,19 @@ module pipeline (
             mem_pc_four <= ex_pc_four; 
         end
     end
-/****************************************************  MEM stage *******************************************/ 
+/****************************************************  MEM stage *************************************************/ 
+    mem_stage MEM(
+       // Clock and reset 
+       .i_clk, 
+       .i_rst, 
+       // Input 
+       .i_mem_wren     (mem_mem_wren), 
+       .i_st_rewrite   (mem_st_rewrite), 
+       .i_alu_data     (mem_alu_data), 
+       .i_st_data      (mem_st_data),
+       // Output
+       .o_ld_data      (mem_ld_data)
+    ); 
 /****************************************************  MEM-WB register *******************************************/ 
     // WB register
     always_ff @( posedge i_clk or posedge i_rst ) begin
@@ -347,12 +360,8 @@ module pipeline (
     );
 /**************************************************** Instante output *******************************************/ 
     assign o_wb_data = wb_wb_data;
-    assign o_alu_data = ex_alu_data; 
-    assign o_instruct = id_instruct; 
+    assign o_pc_debug = if_pc_cur; 
+    assign o_alu_d = mem_alu_data; 
     assign o_fw_a = ex_fw_a; 
     assign o_fw_b = ex_fw_b; 
-    assign o_rs1_addr = ex_rs1_addr; 
-    assign o_rs2_addr = ex_rs2_addr; 
-    assign o_mem_rd_addr = mem_rd_addr; 
-    assign o_wb_rd_addr = wb_rd_addr; 
 endmodule

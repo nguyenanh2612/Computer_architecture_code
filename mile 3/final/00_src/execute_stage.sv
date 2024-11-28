@@ -7,25 +7,26 @@ module execute_stage (
 
     input logic [3:0] i_alu_op, 
     input logic [1:0] i_forward_A, i_forward_B, 
-    input logic i_imme_sel, 
+    input logic i_imme_sel, i_rs1_sel, 
 
     // Output
-    output logic [31:0] o_alu_data, o_operand_b,
-    output logic [31:0] o_pc_br
+    output logic [31:0] o_alu_data, o_operand_b
 );
 /******************************************* Immediate signals *******************************************/
-    logic [31:0] temp_rs2_d; 
+    logic [31:0] temp_rs2_d, temp_rs1_d; 
     logic [31:0] operand_a_d, operand_b_d; 
 /******************************************* Mux forwarding selection *******************************************/
     // Rs2 or immediate value
     assign temp_rs2_d = (i_imme_sel) ? i_imme_value : i_rs2_data; 
+    // Rs1 or PC 
+    assign temp_rs1_d = (i_rs1_sel) ? i_pc_cur : i_rs1_data; 
 
     // Operand A forwarding 
     always_comb begin
         case (i_forward_A)
         // No forward
         2'd0: begin
-            operand_a_d = i_rs1_data; 
+            operand_a_d = temp_rs1_d; 
         end
         // Forward from WB
         2'd1: begin
@@ -74,8 +75,6 @@ module execute_stage (
         .o_alu_data
     ); 
 
-    // PC branch
-    assign o_pc_br = i_pc_cur + {i_imme_value[29:0],2'b00}; 
     // ST data
-    assign o_operand_b = operand_b_d; 
+    assign o_operand_b =  i_rs2_data; 
 endmodule
