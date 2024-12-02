@@ -1,0 +1,39 @@
+module branch_predictor #(
+    parameter ADDR_WIDTH = 32, // Number of bits for address indexing BHT
+    parameter BHT_DEPTH = 1 << ADDR_WIDTH // Number of entries in BHT
+) (
+    input logic i_clk,
+    input logic i_rst,                 // Active-low reset
+    input logic [ADDR_WIDTH-1:0] i_pc_br,   // Branch instruction address
+    input logic i_actual_branch_taken,          // Actual branch outcome
+    output logic o_prediction            // Predicted outcome (1: Taken, 0: Not Taken)
+);
+
+    // Branch History Table (BHT)
+    logic [1:0] bht [0:BHT_DEPTH-1]; // 2-bit saturating counters
+
+    // Index into BHT
+    logic [1:0] current_state; // Current prediction state for the given PC
+
+    // Initialize BHT on reset
+    always_ff @(posedge i_clk or posedge i_rst) begin
+        if (rst_n) begin
+            bht <= '{default: 2'b01}; 
+        end else begin
+            // Update BHT state based on actual branch outcome
+            current_state = bht[i_pc_br];
+            case (current_state)
+                2'b00: bht[i_pc_br] <= i_actual_branch_taken ? 2'b01 : 2'b00; // Strongly Not Taken
+                2'b01: bht[i_pc_br] <= i_actual_branch_taken ? 2'b10 : 2'b00; // Weakly Not Taken
+                2'b10: bht[i_pc_br] <= i_actual_branch_taken ? 2'b11 : 2'b01; // Weakly Taken
+                2'b11: bht[i_pc_br] <= i_actual_branch_taken ? 2'b11 : 2'b10; // Strongly Taken
+            endcase
+        end
+    end
+
+    // Output prediction based on current state
+    always_comb begin
+        o_prediction = (bht[i_pc_br][1] == 1'b1); // Predict Taken if MSB is 1
+    end
+
+endmodule

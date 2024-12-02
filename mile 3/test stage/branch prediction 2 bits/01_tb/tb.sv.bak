@@ -1,0 +1,94 @@
+`timescale 1ps/1ps
+module tb;
+/******************************************** I/O signals *********************************************/
+    // Clock and reset
+    logic tb_clk;
+    logic tb_rst;
+    // Input
+    logic tb_actual_branch_taken;
+    // Output 
+    logic [1:0] tb_state
+    logic tb_prediction;
+
+/******************************************** Instantiate module *********************************************/
+    // Instantiate the branch_predictor module
+    branch_predictor uut (
+        .i_clk                     (tb_clk),
+        .i_rst                     (tb_rst),
+        .i_actual_branch_taken     (tb_actual_branch_taken),
+        .o_state                   (tb_state),
+        .o_prediction              (tb_prediction)
+    );
+
+/******************************************** Generate clock *********************************************/
+    // Generate clock signal
+    initial begin
+        tb_clk = 1;
+        forever #5 tb_clk = ~tb_clk; // Clock period 10ns
+    end
+
+/******************************************** Test cases *********************************************/
+    // Test cases 
+    initial begin 
+        tb_rst = 1; 
+        tb_actual_branch_taken = 0; 
+        #10 tb_rst = 0;
+
+        // Test 1: Branch not taken, initial state is Weakly Not Taken (2'b01)
+        tb_actual_branch_taken = 0; 
+        #10; 
+        if (tb_prediction == 0) 
+            $display("Test 1 PASSED"); 
+        else 
+            $display("Test 1 FAILED");
+
+        // Test 2: Branch taken, should move to Weakly Taken (2'b10)
+        tb_actual_branch_taken = 1; 
+        #10; 
+        if (tb_prediction == 1) 
+            $display("Test 2 PASSED"); 
+        else 
+            $display("Test 2 FAILED");
+
+        // Test 3: Branch taken again, should move to Strongly Taken (2'b11)
+        tb_actual_branch_taken = 1; 
+        #10; 
+        if (tb_prediction == 1) 
+            $display("Test 3 PASSED"); 
+        else 
+            $display("Test 3 FAILED");
+
+        // Test 4: Branch not taken, should move to Weakly Taken (2'b10)
+        tb_actual_branch_taken = 0; 
+        #10; 
+        if (tb_prediction == 1) 
+            $display("Test 4 PASSED"); 
+        else 
+            $display("Test 4 FAILED");
+
+        // Test 5: Branch not taken again, should move to Weakly Not Taken (2'b01)
+        tb_actual_branch_taken = 0; 
+        #10; 
+        if (tb_prediction == 0) 
+            $display("Test 5 PASSED"); 
+        else 
+            $display("Test 5 FAILED");
+
+        // Test 6: Branch not taken again, should move to Strongly Not Taken (2'b00)
+        tb_actual_branch_taken = 0; 
+        #10; 
+        if (tb_prediction == 0) 
+            $display("Test 6 PASSED"); 
+        else 
+            $display("Test 6 FAILED");
+
+        // Test 7: Branch taken, should move to Weakly Not Taken (2'b01)
+        tb_actual_branch_taken = 1; 
+        #10; 
+        if (tb_prediction == 0) 
+            $display("Test 7 PASSED"); 
+        else 
+            $display("Test 7 FAILED");
+    end
+
+endmodule

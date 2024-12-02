@@ -60,10 +60,10 @@ module pipeline (
     logic [31:0] ex_alu_data;
     logic [31:0] ex_st_data;
     logic [1:0] ex_fw_a, ex_fw_b; 
+    logic brc_pc_sel; 
 
     // Mem's output signals 
     // MEM register
-    logic mem_pc_sel;
     logic mem_mem_rden, mem_mem_wren; 
     logic [1:0] mem_st_rewrite; 
     // WB register 
@@ -96,7 +96,7 @@ module pipeline (
        .i_clk, 
        .i_rst, 
        // Input 
-       .i_pc_sel       (mem_pc_sel), 
+       .i_pc_sel       (ex_pc_sel | brc_pc_sel), 
        .i_pc_enable    (pc_enable), 
        .i_pc_br        (ex_alu_data), 
        // Output
@@ -254,6 +254,16 @@ module pipeline (
        .o_operand_b           (ex_st_data)
     ); 
 
+    brc BR_COMPARE(
+       // Input
+       .i_rs1_data            (ex_rs1_data),
+       .i_rs2_data            (ex_rs2_data), 
+       .i_br_type             (3'd6), 
+       .i_br_uns              (ex_br_unsigned),  
+       // Ouput
+       .o_pc_sel              (brc_pc_sel)
+    );
+
     forwarding_control FW(
        // Input 
        .i_rd_wren_mem         (mem_rd_wren), 
@@ -272,13 +282,11 @@ module pipeline (
         if (i_rst) begin
             mem_mem_rden <= 1'b0; 
             mem_mem_wren <= 1'b0; 
-            mem_st_rewrite <= 2'd3; 
-            mem_pc_sel <= 1'b0; 
+            mem_st_rewrite <= 2'd3;  
         end else begin
             mem_mem_rden <= ex_mem_rden; 
             mem_mem_wren <= ex_mem_wren; 
             mem_st_rewrite <= ex_st_rewrite; 
-            mem_pc_sel <= ex_pc_sel; 
         end
     end
     // WB register
