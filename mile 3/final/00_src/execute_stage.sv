@@ -9,15 +9,18 @@ module execute_stage (
     input logic [1:0] i_forward_A, i_forward_B, 
     input logic i_imme_sel, i_rs1_sel, 
 
+    input logic i_jalr_iden, 
+    input logic i_br_unsigned, 
+    input logic [2:0] i_br_type, 
+
     // Output
-    output logic [31:0] o_alu_data, o_operand_b
+    output logic o_brc_pc_sel, 
+    output logic [31:0] o_pc_br ,o_alu_data, o_operand_b
 );
 /******************************************* Immediate signals *******************************************/
     logic [31:0] temp_rs2_d, temp_rs1_d; 
     logic [31:0] operand_a_d, operand_b_d; 
 /******************************************* Mux forwarding selection *******************************************/
-    // Rs2 or immediate value
-    assign temp_rs2_d = (i_imme_sel) ? i_imme_value : i_rs2_data; 
     // Rs1 or PC 
     assign temp_rs1_d = (i_rs1_sel) ? i_pc_cur : i_rs1_data; 
 
@@ -48,7 +51,7 @@ module execute_stage (
         case (i_forward_B)
         // No forward
         2'd0: begin
-            operand_b_d = temp_rs2_d; 
+            operand_b_d = i_rs2_data; 
         end
         // Forward from WB
         2'd1: begin
@@ -69,12 +72,26 @@ module execute_stage (
     alu ALU(
         // Input 
         .i_operand_a   (operand_a_d), 
-        .i_operand_b   (operand_b_d), 
+        .i_operand_b   (temp_rs2_d), 
         .i_alu_op      (i_alu_op), 
         // Output 
         .o_alu_data
     ); 
 
+    // fw_result or immediate value
+    assign temp_rs2_d = (i_imme_sel) ? i_imme_value : operand_b_d; 
+    
+    brc BR_COMPARE(
+       // Input
+       .i_rs1_data            (operand_a_d),
+       .i_rs2_data            (operand_b_d), 
+       .i_br_type             (i_br_type), 
+       .i_br_uns              (i_br_unsigned),  
+       // Ouput
+       .o_pc_sel              (o_brc_pc_sel)
+    );
+
     // ST data
-    assign o_operand_b =  i_rs2_data; 
+    assign o_operand_b =  operand_b_d; 
+    assign o_pc_br     =  (i_jalr_iden) ? o_alu_data : i_pc_cur + i_imme_value; 
 endmodule
