@@ -22,14 +22,11 @@ Design 2 basic architechtures of RISC_V: single-cycle and pipelined.
    - Commit & push to github
    - Wait the owner accept the request or messaging to ánh
 4. **Control unit signal excel**
-   - Link for single cycle: https://docs.google.com/spreadsheets/d/1aaAOjJfxVr4wakKfACmRoRKg5aqppr6bIWHU7UIUbmI/edit?usp=sharing
-   - link for pipeline    : update later
+   - Link for single cycle & pipeline: https://docs.google.com/spreadsheets/d/1aaAOjJfxVr4wakKfACmRoRKg5aqppr6bIWHU7UIUbmI/edit?usp=sharing  
 5. **Testbench**
    Chạy trên Console transcript của modelsim nha ko phải coi waveform. 
    Tao có hệ thống lại một tí như sau: 
       + Với FETCH, thì sẽ test câu lênh đưa ra nếu đúng thì PASS hết ko thì sẽ FAILED và câu lệnh sai. 
       + Với DECODE, test lại cách lưu ghi, đọc với regfile và hoạt động của ImmGen (phần này t hơi lười ae có được thì thêm test phần này thêm 1 số trường hợp nha t mới test trường hợp default: 0 thôi=)) ).  
-## Note
-  Any new ignores, it will be updated later.
       
 
